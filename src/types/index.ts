@@ -1,7 +1,13 @@
+import type { User } from "firebase/auth";
+
 export type Location = "Van Munching" | "McKeldin" | "Clarice";
 
-export interface User {
-  id: string;
+export interface AuthContextType {
+  currentUser: User | null;
+  loading: boolean;
+}
+
+export interface UserData {
   name: string;
   email: string;
   role: "buyer" | "seller";
