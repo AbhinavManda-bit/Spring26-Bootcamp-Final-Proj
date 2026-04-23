@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             let invalidParams: boolean = false;
             // name must not be an empty string
             if(name.length === 0){
-                paramErrorMessage = paramErrorMessage + "\n\n•Name must not be empty.\n";
+                paramErrorMessage = paramErrorMessage + "•Name must not be empty.\n";
                 invalidParams = true;
             }
             // email must be a valid email (checked through regex)
@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 errorMessage = error.message;
             }
             setLoading(false);
-            alert("Sign up error: " + errorMessage);
+            alert("Sign up error: \n\n" + errorMessage);
         }
     }
 
