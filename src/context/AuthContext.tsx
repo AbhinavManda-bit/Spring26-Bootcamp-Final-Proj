@@ -123,6 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return await createUserWithEmailAndPassword(auth, email, password);
         };
         try {
+            // build and insert this user's data into firestore
             const newUserCreds = await innerSignupAndLoginFunc();
             const newUserId = newUserCreds.user.uid;
             const newUserDocRef = doc(db, "users", newUserId);
