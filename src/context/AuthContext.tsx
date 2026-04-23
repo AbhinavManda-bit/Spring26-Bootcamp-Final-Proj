@@ -34,7 +34,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // helper function to pull userdata from firestore given a user. return null if user passed in is null
     // or if the user's data cannot be found in firestore
     // if it can't find the data, then it retries after 1 second delays repeated until it is found
-    // (in the edge case that we try to look up the data before it has been inserted on account sign up)
+    // (in the edge case that we try to look up (in the auth change listener function) 
+    // the data before it has been inserted on account sign up)
     const pullUserData = async (user: User) => {
         if(user){
             const userId = user.uid;
@@ -57,6 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // use effect that attaches an auth state change listener to update our context for the user
     // when the user changes on the auth
     useEffect(() => {
+        console.log("use effect ran");
+
         // async function inside the use effect that fetches data for the user, sets 
         // the userdata context to it, and then sets loading context to false once the data
         // is initiated
@@ -66,7 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setLoading(false);
         };
 
+        // attaches listener to auth that updates user and user data context when the auth is changed
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log("auth listener function ran. auth has been changed");
             setCurrentUser(user);
             if(!user){
                 setCurrentUserData(null);
@@ -79,13 +84,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return unsubscribe;
     }, []);
 
+    // ALL 4 UTILITY FUNCTIONS BELOW DISPLAY ANY ERRORS THEY EXPERIENCE AS POPUPS TO THE USER
+    // THESE FUNCTIONS ARE PASSED DOWN TO CHILD COMPONENTS AS A CONTEXT
+
+    // utility function for sign up. validates input parameters (throwing error if not valid), 
+    // creates a new user in the auth, and inserts their user data into firestore.
     const signupAndLogin = async (name: string, email: string, password: string, role: Role) => {
         setLoading(true);
         const innerSignupAndLoginFunc = async () => {
             // validate parameters
-            if(password.length < 8) throw new Error("Password must be at least 8 characters long");
-            if(name.length === 0) throw new Error("Name must not be empty.");
-            if(!((role.toString() === "buyer") || (role.toString() === "seller"))) throw new Error("Please enter a valid role ('buyer' or 'seller')");
+            let paramErrorMessage: string = "";
+            let invalidParams: boolean = false;
+            // name must not be an empty string
+            if(name.length === 0){
+                paramErrorMessage = paramErrorMessage + "\n\n•Name must not be empty.\n";
+                invalidParams = true;
+            }
+            // email must be a valid email (checked through regex)
+            if(!(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email))){
+                paramErrorMessage = paramErrorMessage + "•Enter a valid email.\n";
+                invalidParams = true;
+            }
+            // password must be 8 chars or longer
+            if(password.length < 8){
+                paramErrorMessage = paramErrorMessage + "•Password must be at least 8 characters long.\n";
+                invalidParams = true;
+            }
+            // 
+            if(!((role.toString() === "buyer") || (role.toString() === "seller"))){
+                paramErrorMessage = paramErrorMessage + "•Input a valid role ('buyer' or 'seller').";
+                invalidParams = true;
+            }
+            // throw an error if any parameter is invalid
+            if(invalidParams){
+                setLoading(false);
+                throw new Error(paramErrorMessage);
+            }
             return await createUserWithEmailAndPassword(auth, email, password);
         };
         try {
@@ -103,10 +137,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if(error instanceof Error){
                 errorMessage = error.message;
             }
+            setLoading(false);
             alert("Sign up error: " + errorMessage);
         }
     }
 
+    // utility function to log in a user
     const login = async (email: string, password: string) => {
         setLoading(true);
         try {
@@ -116,10 +152,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if(error instanceof Error){
                 errorMessage = error.message;
             }
+            setLoading(false);
             alert("Sign in error: " + errorMessage);
         }
     }
 
+    // utility function to logout a user
     const logout = async () => {
         setLoading(true);
         try { 
@@ -129,10 +167,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if(error instanceof Error){
                 errorMessage = error.message;
             }
+            setLoading(false);
             alert("Sign out error: " + errorMessage);
         }
+        setLoading(false);
     }
 
+    // utility function to send a reset password email to a user's email
     const sendResetPWEmail = async (email: string) => {
         setLoading(true);
         try {
@@ -142,6 +183,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if(error instanceof Error){
                 errorMessage = error.message;
             }
+            setLoading(false);
             alert("Password reset email error: " + errorMessage);
         } finally {
             setLoading(false);
