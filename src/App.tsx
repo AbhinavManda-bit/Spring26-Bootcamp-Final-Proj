@@ -19,10 +19,10 @@ function App() {
 
   return (
           <>
-            <p>{currentUser ? currentUser.email : "not logged in no email"}</p>
-            <p>{currentUserData ? currentUserData.email : "not logged in no email"}</p>
+            <p>{currentUser ? currentUser.email : "not logged in no email from user context"}</p>
+            <p>{currentUserData ? currentUserData.email : "not logged in no email from user data context"}</p>
             <p>{currentUserData ? currentUserData.name : "not logged in no name"}</p>
-            <p>{currentUserData ? currentUserData.role : "not logged in no email"}</p>
+            <p>{currentUserData ? currentUserData.role : "not logged in no role"}</p>
             <p>{loading.toString()}</p>
           </>
   );

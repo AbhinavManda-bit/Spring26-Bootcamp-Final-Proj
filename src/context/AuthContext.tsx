@@ -33,13 +33,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // helper function to pull userdata from firestore given a user. return null if user passed in is null
     // or if the user's data cannot be found in firestore
+    // if it can't find the data, then it retries after 1 second delays repeated until it is found
+    // (in the edge case that we try to look up the data before it has been inserted on account sign up)
     const pullUserData = async (user: User) => {
         if(user){
             const userId = user.uid;
             const userDataDocRef = doc(db, "users", userId);
-            const userDataSnap = await getDoc(userDataDocRef);
+            let userDataSnap = await getDoc(userDataDocRef);
             if(!userDataSnap.exists()){
-                return null;
+                while(true) {
+                    await new Promise(r => setTimeout(r, 1000)); 
+                    userDataSnap = await getDoc(userDataDocRef);
+                    if(userDataSnap.exists()) break;
+                }
             }
             const userData = userDataSnap.data() as UserData;
             return userData;
@@ -51,6 +57,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // use effect that attaches an auth state change listener to update our context for the user
     // when the user changes on the auth
     useEffect(() => {
+        // async function inside the use effect that fetches data for the user, sets 
+        // the userdata context to it, and then sets loading context to false once the data
+        // is initiated
         const pullThisUsersData = async (user: User) => {
             const usersData = await pullUserData(user);
             setCurrentUserData(usersData);
@@ -70,25 +79,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return unsubscribe;
     }, []);
 
-    // MAY BE WRONG IMPLEMENTATION
-    // // use effect to update current user data once the user that is logged in is changed
-    // useEffect(() => {
-    //     const pullUserDataInsideUseEffect = async () => {
-    //         if(currentUser){
-    //             setCurrentUserData(await pullUserData(currentUser));
-    //         }
-    //         else {
-    //             setCurrentUserData(null);
-    //         }
-    //         setLoading(false);
-    //     }
-    //     pullUserDataInsideUseEffect();
-    // }, [currentUser])
-
     const signupAndLogin = async (name: string, email: string, password: string, role: Role) => {
         setLoading(true);
         const innerSignupAndLoginFunc = async () => {
+            // validate parameters
             if(password.length < 8) throw new Error("Password must be at least 8 characters long");
+            if(name.length === 0) throw new Error("Name must not be empty.");
+            if(!((role.toString() === "buyer") || (role.toString() === "seller"))) throw new Error("Please enter a valid role ('buyer' or 'seller')");
             return await createUserWithEmailAndPassword(auth, email, password);
         };
         try {
@@ -107,8 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 errorMessage = error.message;
             }
             alert("Sign up error: " + errorMessage);
-        } finally {
-            setLoading(false);
         }
     }
 
@@ -122,8 +117,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 errorMessage = error.message;
             }
             alert("Sign in error: " + errorMessage);
-        } finally {
-            setLoading(false);
         }
     }
 
@@ -137,8 +130,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 errorMessage = error.message;
             }
             alert("Sign out error: " + errorMessage);
-        } finally {
-            setLoading(false);
         }
     }
 
