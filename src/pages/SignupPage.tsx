@@ -92,36 +92,41 @@ export default function SignupPage () {
                                 className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
                             >Login</Link>
                         </div>
-                        {/* Name field */}
-                        <p className="text-sm mb-1">Name</p>
-                        <input
-                            className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                        {/* Email field */}
-                        <p className="text-sm mb-1">Email</p>
-                        <input
-                            className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                            placeholder="jdoe@hackforimpact.org"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        {/* Password field */}
-                        <p className="text-sm mb-1">Password</p>
-                        <input
-                            className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        {/* Password instructions */}
-                        <p className="text-xs text-gray-600 mb-10">Use 8 or more characters with a mix of letters, numbers, and symbols.</p>
-                        {/* Signup */}
-                        <button
-                            className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer"
-                            onClick={handleAuth}
-                        >Create an account</button>
+                        <form 
+                            className="flex flex-col"
+                            onSubmit={handleAuth}
+                        >
+                            {/* Name field */}
+                            <p className="text-sm mb-1">Name</p>
+                            <input
+                                className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
+                                placeholder="John Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            {/* Email field */}
+                            <p className="text-sm mb-1">Email</p>
+                            <input
+                                className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
+                                placeholder="jdoe@hackforimpact.org"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            {/* Password field */}
+                            <p className="text-sm mb-1">Password</p>
+                            <input
+                                className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            {/* Password instructions */}
+                            <p className="text-xs text-gray-600 mb-10">Use 8 or more characters with a mix of letters, numbers, and symbols.</p>
+                            {/* Signup */}
+                            <button
+                                className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer"
+                                type="submit"
+                            >Create an account</button>
+                        </form>
                     </div>
                 </div>
             </div>

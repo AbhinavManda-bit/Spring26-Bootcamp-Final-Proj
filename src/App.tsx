@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 
 import LoginPage from "./pages/LoginPage";
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from "./pages/ForgotPassword";
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LoginPage/>}/>
                     <Route path="/signup" element={<SignupPage/>}/>
+                    <Route path="/recover" element={<ForgotPasswordPage/>}/>
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

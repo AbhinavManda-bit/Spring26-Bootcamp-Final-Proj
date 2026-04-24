@@ -58,7 +58,7 @@ export default function LoginPage () {
                 <div className="flex flex-1 justify-center items-center">
                     <div className="flex flex-col w-2/3 ml-20 mr-5 my-10">
                         {/* Welcome message */}
-                        <p className="text-4xl font-bold mb-10">Welcome Back, Terp {currentUserData?.name}</p>
+                        <p className="text-4xl font-bold mb-10">Welcome Back, Terp</p>
                         {/* Link to SignupPage */}
                         <div className="flex gap-x-1 mb-10">
                             <p className="font-light">Don't have an account?</p>
@@ -67,35 +67,40 @@ export default function LoginPage () {
                                 className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
                             >Create now</Link>
                         </div>
-                        {/* Username field */}
-                        <p className="text-sm mb-1">Email</p>
-                        <input
-                            className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                            placeholder="someone@hackforimpact.org"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        {/* Password field */}
-                        <p className="text-sm mb-1">Password</p>
-                        <input
-                            className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        {/* Link to ForgotPassword */}
-                        <div className="flex justify-end mb-10">
-                            <Link
-                                to="/recover"
-                                className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
-                            >Forgot password?</Link>
-                        </div>
-                        {/* Login */}
-                        <button
-                            className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer"
-                            onClick={handleAuth}
+                        <form 
+                            className="flex flex-col"
+                            onSubmit={handleAuth}
                         >
-                            Sign in
-                        </button>
+                            {/* Username field */}
+                            <p className="text-sm mb-1">Email</p>
+                            <input
+                                className="focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
+                                placeholder="someone@hackforimpact.org"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            {/* Password field */}
+                            <p className="text-sm mb-1">Password</p>
+                            <input
+                                className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            {/* Link to ForgotPassword */}
+                            <div className="flex justify-end mb-10">
+                                <Link
+                                    to="/recover"
+                                    className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
+                                >Forgot password?</Link>
+                            </div>
+                            {/* Login */}
+                            <button
+                                className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer"
+                                type="submit"
+                            >
+                                Sign in
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
