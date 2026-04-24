@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import { ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/logo.png";
@@ -72,17 +73,27 @@ export default function SignupPage () {
                         <div className="flex justify-between items-center mb-6">
                             <button
                                 className={`w-4/9 rounded-xl font-medium py-2 px-4 rounded-lg cursor-pointer
-                                    ${(role === "buyer") ? "bg-white border border-terp-red text-terp-red" : "bg-terp-red hover:bg-terp-darkred text-white"}
+                                    ${(role === "buyer") ? "bg-terp-red text-white" : "bg-white hover:bg-gray-100 border border-terp-red text-terp-red"}
                                 `}
                                 onClick={() => setRole("buyer")}
-                            >Buying</button>
+                            >
+                                <div className="flex justify-center items-center gap-x-2">
+                                    <p>Buying</p>
+                                    <ShoppingCartIcon className="h-4 w-4" />
+                                </div>
+                            </button>
                             <p>OR</p>
                             <button
                                 className={`w-4/9 rounded-xl font-medium py-2 px-4 rounded-lg cursor-pointer
-                                    ${(role === "seller") ? "bg-white border border-terp-red text-terp-red" : "bg-terp-red hover:bg-terp-darkred text-white"}
+                                    ${(role === "seller") ? "bg-terp-red text-white" : "bg-white hover:bg-gray-100 border border-terp-red text-terp-red"}
                                 `}
                                 onClick={() => setRole("seller")}
-                            >Selling</button>
+                            >
+                                <div className="flex justify-center items-center gap-x-2">
+                                    <p>Selling</p>
+                                    <TagIcon className="h-4 w-4" />
+                                </div>
+                            </button>
                         </div>
                         {/* Link to LoginPage */}
                         <div className="flex gap-x-1 mb-10">

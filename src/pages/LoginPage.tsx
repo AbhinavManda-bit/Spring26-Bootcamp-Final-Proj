@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/logo.png";
@@ -16,6 +17,7 @@ export default function LoginPage () {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(true);
 
     const { currentUserData, loading, login } = useAuth();
 
@@ -81,11 +83,19 @@ export default function LoginPage () {
                             />
                             {/* Password field */}
                             <p className="text-sm mb-1">Password</p>
-                            <input
-                                className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="w-full focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5 mt-1"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {setShowPassword(!showPassword)}}
+                                    className="absolute right-2 top-1/2 transform translate-x-2 -translate-y-14 text-gray-500 hover:text-gray-700"
+                                >{showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeSlashIcon className="h-5 w-5" />}</button>
+                            </div>
                             {/* Link to ForgotPassword */}
                             <div className="flex justify-end mb-10">
                                 <Link
