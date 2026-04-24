@@ -93,7 +93,7 @@ export default function LoginPage () {
                                 <button
                                     type="button"
                                     onClick={() => {setShowPassword(!showPassword)}}
-                                    className="absolute right-2 top-1/2 transform translate-x-2 -translate-y-14 text-gray-500 hover:text-gray-700"
+                                    className="absolute right-2 top-1/2 transform translate-x-2 -translate-y-14 text-gray-500 hover:text-gray-700 cursor-pointer"
                                 >{showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeSlashIcon className="h-5 w-5" />}</button>
                             </div>
                             {/* Link to ForgotPassword */}
