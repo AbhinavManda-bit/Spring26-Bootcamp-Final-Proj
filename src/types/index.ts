@@ -29,11 +29,21 @@ export interface Product {
   category: string;
   location: Location;
   imageUrl: string;
+  vendorId: number;
 }
 
 export interface Order {
   id: string;
   items: Product[];
   total: number;
-  location: Location;
+  prodIdsAndLocations: Record<string, Location>
+}
+
+export interface CartContextType {
+  items: Product[];
+  loading: boolean;
+  addItem: (productId: number) => void;
+  removeItem: (productId: number) => void;
+  clearCart: () => void;
+  calcTotalPrice: () => number;
 }
