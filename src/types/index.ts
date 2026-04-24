@@ -36,14 +36,17 @@ export interface Order {
   id: string;
   items: Product[];
   total: number;
-  prodIdsAndLocations: Record<string, Location>
 }
 
 export interface CartContextType {
-  items: Product[];
-  loading: boolean;
-  addItem: (productId: number) => void;
-  removeItem: (productId: number) => void;
-  clearCart: () => void;
-  calcTotalPrice: () => number;
+  items: number[] | null; //array of product ID's
+  loadingCart: boolean;
+  addItem: (productId: string) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  calcTotalPrice: () => Promise<number>;
+}
+
+export interface CartData {
+  items: number[];
 }
