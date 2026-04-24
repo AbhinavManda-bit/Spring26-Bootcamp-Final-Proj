@@ -84,7 +84,7 @@ export const useCart = () => {
 }
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-    const [items, setItems] = useState<number[] | null>(null);
+    const [items, setItems] = useState<string[] | null>(null);
     const [loadingCart, setLoadingCart] = useState(true)
     
     const { currentUser } = useAuth();  
@@ -114,6 +114,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             throw new Error("Item with this product id is not in the list of products (product catalog).");
         } 
         if(currentUser){
+            const userData = (await pullUserData(currentUser));
+            if(userData && userData.role == "seller"){
+                setLoadingCart(false);
+                throw new Error("The currently logged in user is a seller.");
+            }
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
             await updateDoc(userDataCartDocRef, {
@@ -139,9 +144,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         if(currentUser){
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
-            await updateDoc(userDataCartDocRef, {
+            try{
+                await updateDoc(userDataCartDocRef, {
                 items: arrayRemove(productId)
-            });
+                });
+            } catch {
+                throw new Error("db write failed");
+            }
             setLoadingCart(false);
         } else {
             setLoadingCart(false);
@@ -160,6 +169,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             await updateDoc(userDataCartDocRef, {
                 items: []
             });
+            setItems([]);
             setLoadingCart(false);
         } else {
             setLoadingCart(false);

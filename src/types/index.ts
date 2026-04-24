@@ -39,7 +39,7 @@ export interface Order {
 }
 
 export interface CartContextType {
-  items: number[] | null; //array of product ID's
+  items: string[] | null; //array of product ID's
   loadingCart: boolean;
   addItem: (productId: string) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
@@ -48,5 +48,5 @@ export interface CartContextType {
 }
 
 export interface CartData {
-  items: number[];
+  items: string[];
 }
