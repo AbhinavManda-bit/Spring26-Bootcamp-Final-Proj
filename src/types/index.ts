@@ -1,4 +1,4 @@
-export type Location = "Van Munching" | "McKeldin" | "Clarice";
+export type Location = "Van Munching" | "McKeldin Library" | "Clarice" | "STAMP" | "IRIBE";
 
 export interface User {
   id: string;
@@ -9,10 +9,12 @@ export interface User {
 
 export interface Product {
   id: string;
+  vendorId: string;
   title: string;
   description: string;
   price: number;
   size: string;
+  gender?: "Men" | "Women";
   category: string;
   location: Location;
   imageUrl: string;
@@ -20,7 +22,7 @@ export interface Product {
 
 export interface Order {
   id: string;
-  items: Product[];
+  items: Record<string, Product>;
   total: number;
   location: Location;
 }
