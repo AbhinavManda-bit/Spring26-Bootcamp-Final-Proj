@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/logo.png";
@@ -17,20 +17,29 @@ export default function LoginPage () {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const { currentUserData, login } = useAuth();
+    const { currentUserData, loading, login } = useAuth();
 
     const navigate = useNavigate();
+
+    /**
+        Send the user away automatically once signed up
+        (!) Uncomment once logout feature is implemented
+    useEffect(() => {
+        if (loading) return;
+        if (!currentUserData) return;
+        console.log("Redirecting:", currentUserData.role);
+        if (currentUserData.role === "buyer") {
+            navigate("/catalog");
+        } else {
+            navigate("/dashboard");
+        }
+    }, [navigate, currentUserData, loading]);
+    **/
 
     const handleAuth = async () => {
         try {
             await login(email, password);
-            if (currentUserData.role === "buyer") {
-                // Send buyer to catalog
-                navigate("/catalog");
-            } else if (currentUserData.role === "seller") {
-                // Send seller to dashboard
-                navigate("/dashboard");
-            }
+            console.log("User logged in");
         } catch (error) {
             console.error(error);
         }
@@ -49,7 +58,7 @@ export default function LoginPage () {
                 <div className="flex flex-1 justify-center items-center">
                     <div className="flex flex-col w-2/3 ml-20 mr-5 my-10">
                         {/* Welcome message */}
-                        <p className="text-4xl font-bold mb-10">Welcome Back, Terp</p>
+                        <p className="text-4xl font-bold mb-10">Welcome Back, Terp {currentUserData?.name}</p>
                         {/* Link to SignupPage */}
                         <div className="flex gap-x-1 mb-10">
                             <p className="font-light">Don't have an account?</p>
