@@ -1,11 +1,11 @@
-import type { User } from "firebase/auth";
-import type { CartContextType, CartData, Product } from "../types";
+import type { CartContextType } from "../types";
 import { useAuth } from "./AuthContext";
 import { createContext, useContext, useEffect, useState } from "react";
-import { pullUserData } from "./AuthContext";
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { getItemPrice, verifyItemIdInCatalog } from "../Utilities/productUtilities";
+import { pullUserData } from "../Utilities/userUtilities";
+import { pullUserCart } from "../Utilities/cartUtilities";
 
 /*
 Context Description:
@@ -15,35 +15,6 @@ Context Description:
 */ 
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
-
-// helper function to pull this user's cart data. returns null if the user is a vendor. 
-// or if the inputted user is null (no user logged in)
-// if the first data pull leads to blank data, then 
-// retries every 1 second to hit firestore if it can't find the user's entry in firestore
-// (in the edge case that we try to pull the data before the cart data insertion is complete
-// [this edge case only applies to a new sign up for a buyer user])
-const pullUserCart = async (user: User | null) => {
-    if(user){
-        const currentUserData = await pullUserData(user);
-        if(currentUserData && currentUserData.role == "seller"){
-            return null;
-        }
-        const userId = user.uid;
-        const userDataCartDocRef = doc(db, "carts", userId);
-        let userDataCartSnap = await getDoc(userDataCartDocRef);
-        if(!(userDataCartSnap.exists())){
-            while(true) {
-                await new Promise(r => setTimeout(r, 1000)); 
-                userDataCartSnap = await getDoc(userDataCartDocRef);
-                if(userDataCartSnap.exists()) break;
-            }
-        }
-        const userCart = userDataCartSnap.data() as CartData;
-        return userCart;
-    } else {
-        return null;
-    }
-}
 
 export const useCart = () => {
     const context = useContext(CartContext);
@@ -124,6 +95,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             throw new Error("Item with this product id is not in the list of products (product catalog).");
         } 
         if(currentUser){
+            const userData = (await pullUserData(currentUser));
+            if(userData && userData.role == "seller"){
+                setLoadingCart(false);
+                throw new Error("The currently logged in user is a seller.");
+            }
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
             if(!items) throw new Error("Cannot remove an item from a null cart.");
@@ -148,6 +124,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const clearCart = async () => {
         setLoadingCart(true);
         if(currentUser){
+            const userData = (await pullUserData(currentUser));
+            if(userData && userData.role == "seller"){
+                setLoadingCart(false);
+                throw new Error("The currently logged in user is a seller.");
+            }
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
             if(!items) throw new Error("Cannot clear a null cart.");
@@ -168,6 +149,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const calcTotalPrice = async () => {
         setLoadingCart(true);
         if(currentUser){
+            const userData = (await pullUserData(currentUser));
+            if(userData && userData.role == "seller"){
+                setLoadingCart(false);
+                throw new Error("The currently logged in user is a seller.");
+            }
             const currentUserCart = await pullUserCart(currentUser);
             if(currentUserCart){
                 const cartIdList = currentUserCart.items;

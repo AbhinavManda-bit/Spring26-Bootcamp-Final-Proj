@@ -29,7 +29,7 @@ export interface Product {
   category: string;
   location: Location;
   imageUrl: string;
-  vendorId: number;
+  sellerId: number;
 }
 
 export interface Order {
