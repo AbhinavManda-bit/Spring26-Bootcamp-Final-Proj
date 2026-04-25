@@ -16,3 +16,9 @@ body {
   display: flex;
   flex-direction: column;
 }
+@theme {
+    --color-terp-cream: #FAF6F1; /* Cream background color */
+    --color-terp-red: #E05353; /* Red accent color */
+    --color-terp-darkred: #8E2626; /* Dark red accent color */
+    --color-terp-yellow: #FCE340; /* Yellow accent color */
+}

@@ -1,10 +1,27 @@
-export type Location = "Clarice" | "Van Munching" | "McKeldin Library";
+import type { User } from "firebase/auth";
 
-export interface User {
-  id: string;
+export type Location = "Van Munching" | "McKeldin" | "Clarice";
+
+export type Role = "buyer" | "seller";
+
+export interface AuthContextType {
+  currentUser: User | null;
+  currentUserData: UserData | null;
+  loading: boolean;
+  signupAndLogin: (name: string, email: string, password: string, role: Role) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  sendResetPWEmail: (email: string) => Promise<void>;
+}
+
+export interface UserData {
   name: string;
   email: string;
-  role: "buyer" | "seller";
+  role: Role;
+  // fields to add when user saves profile info 
+  bio?: string;           
+  favStyle?: string;      
+  profilePicture?: string;
 }
 
 export interface Product {
