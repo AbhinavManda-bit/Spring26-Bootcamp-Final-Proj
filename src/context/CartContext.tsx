@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { pullUserData } from "./AuthContext";
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
+import { getItemPrice, verifyItemIdInCatalog } from "../Utilities/productUtilities";
 
 /*
 Context Description:
@@ -41,39 +42,6 @@ const pullUserCart = async (user: User | null) => {
         return userCart;
     } else {
         return null;
-    }
-}
-
-//utility function to get a data array of all the items in the current product catalog
-// (as an array of products)
-const getDataOfAllItemsInCatalog = async () => {
-    const collectionRef = collection(db, "products");
-    const querySnapshot = await getDocs(collectionRef);
-
-    const docsData: Product[] = querySnapshot.docs.map((docSnap) => {
-        return ({
-            id: docSnap.id,
-            ...docSnap.data()
-        } as Product);
-    })
-
-    return docsData;
-}
-
-//helper function to verify that an item is a real item in the catalog
-const verifyItemIdInCart = async (productId: string) => {
-    const allItemsInCart = await getDataOfAllItemsInCatalog();
-    return allItemsInCart.some((product) => (product.id === productId));
-}
-
-//helper function to get the price of an item with the given productId
-const getItemPrice = async (productId: string) => {
-    const allItemsInCart = await getDataOfAllItemsInCatalog();
-    const itemPrice = allItemsInCart.find((product) => (product.id === productId))?.price;
-    if(itemPrice){
-        return itemPrice
-    } else {
-        throw new Error("Could not find price of item");
     }
 }
 
@@ -121,7 +89,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     // and displays error to the user
     const addItem = async (productId: string) => {
         setLoadingCart(true);
-        if(!(await verifyItemIdInCart(productId))){
+        if(!(await verifyItemIdInCatalog(productId))){
             setLoadingCart(false);
             throw new Error("Item with this product id is not in the list of products (product catalog).");
         } 
@@ -151,7 +119,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     // leaves cart unaffected if item is not in the cart
     const removeItem = async (productId: string) => {
         setLoadingCart(true);
-        if(!verifyItemIdInCart(productId)){
+        if(!verifyItemIdInCatalog(productId)){
             setLoadingCart(false);
             throw new Error("Item with this product id is not in the list of products (product catalog).");
         } 
