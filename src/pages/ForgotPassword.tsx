@@ -36,7 +36,8 @@ export default function ForgotPasswordPage () {
     }, [navigate, currentUserData, loading]);
     **/
 
-    const handleAuth = async () => {
+    const handleAuth = async (e) => {
+        e.preventDefault();
         try {
             await sendResetPWEmail(email);
             setSent(true);
@@ -76,11 +77,12 @@ export default function ForgotPasswordPage () {
                             />
                             {/* Login */}
                             <button
-                                className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer mb-5"
+                                className="rounded-xl bg-terp-red hover:bg-terp-darkred font-medium text-white py-2 px-4 rounded-lg cursor-pointer mb-4"
                                 type="submit"
                             >
                                 Send reset link
                             </button>
+                            <p className="text-sm text-terp-darkred mb-5">{sent ? "Recovery link sent! Check your email." : "‎"}</p>
                         </form>
                         {/* Link to LoginPage */}
                         <div className="flex gap-x-1">
