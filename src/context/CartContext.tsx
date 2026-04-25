@@ -46,7 +46,7 @@ const pullUserCart = async (user: User | null) => {
 
 //utility function to get a data array of all the items in the current product catalog
 // (as an array of products)
-const getDataOfAllItemsInCart = async () => {
+const getDataOfAllItemsInCatalog = async () => {
     const collectionRef = collection(db, "products");
     const querySnapshot = await getDocs(collectionRef);
 
@@ -62,13 +62,13 @@ const getDataOfAllItemsInCart = async () => {
 
 //helper function to verify that an item is a real item in the catalog
 const verifyItemIdInCart = async (productId: string) => {
-    const allItemsInCart = await getDataOfAllItemsInCart();
+    const allItemsInCart = await getDataOfAllItemsInCatalog();
     return allItemsInCart.some((product) => (product.id === productId));
 }
 
 //helper function to get the price of an item with the given productId
 const getItemPrice = async (productId: string) => {
-    const allItemsInCart = await getDataOfAllItemsInCart();
+    const allItemsInCart = await getDataOfAllItemsInCatalog();
     const itemPrice = allItemsInCart.find((product) => (product.id === productId))?.price;
     if(itemPrice){
         return itemPrice
