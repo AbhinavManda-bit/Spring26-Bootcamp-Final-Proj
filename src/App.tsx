@@ -40,7 +40,7 @@ function App() {
             <p>-----</p>
             <p>-----Cart------</p>
             <p>-----</p>
-            <p>{items ? items.toString() : "items are not defined in cart"}</p>
+            <p>{items ? "[" + items.toString() + "]" : "items are not defined in cart"}</p>
             <p>{loadingCart.toString()}</p>
           </>
   );

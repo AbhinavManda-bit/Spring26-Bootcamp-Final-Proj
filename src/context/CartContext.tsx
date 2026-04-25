@@ -60,13 +60,13 @@ const getDataOfAllItemsInCart = async () => {
     return docsData;
 }
 
-//utility function to verify that an item is a real item in the catalog
+//helper function to verify that an item is a real item in the catalog
 const verifyItemIdInCart = async (productId: string) => {
     const allItemsInCart = await getDataOfAllItemsInCart();
     return allItemsInCart.some((product) => (product.id === productId));
 }
 
-//utility function to get the price of an item with the given productId
+//helper function to get the price of an item with the given productId
 const getItemPrice = async (productId: string) => {
     const allItemsInCart = await getDataOfAllItemsInCart();
     const itemPrice = allItemsInCart.find((product) => (product.id === productId))?.price;
@@ -89,6 +89,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     
     const { currentUser } = useAuth();  
     
+    // use effect to update cart when the user changes.
+    // if a buyer user is logged in, pull their cart from firestore and set it
+    // if a user is not logged in or if a seller is logged in, set the cart to null
     useEffect(() => {
         const loadCart = async () => {
             setLoadingCart(true);
@@ -100,7 +103,16 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             }
             setLoadingCart(false);
         };
-        loadCart();
+        const nullifyCart = async () => {
+            setLoadingCart(true);
+            setItems(null);
+            setLoadingCart(false);
+        }
+        if(currentUser) {
+            loadCart();
+        } else {
+            nullifyCart();
+        }
     }, [currentUser])
 
     // utility function to add item to cart
@@ -119,6 +131,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
                 setLoadingCart(false);
                 throw new Error("The currently logged in user is a seller.");
             }
+            if(!items) throw new Error("Cannot add an item to a null cart.");
+            setItems([...items, productId]);
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
             await updateDoc(userDataCartDocRef, {
@@ -144,12 +158,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         if(currentUser){
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
+            if(!items) throw new Error("Cannot remove an item from a null cart.");
+            setItems(items.filter(item => item !== productId));
             try{
                 await updateDoc(userDataCartDocRef, {
                 items: arrayRemove(productId)
                 });
             } catch {
-                throw new Error("db write failed");
+                throw new Error("error with db + ");
             }
             setLoadingCart(false);
         } else {
@@ -166,6 +182,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         if(currentUser){
             const userId = currentUser.uid;
             const userDataCartDocRef = doc(db, "carts", userId);
+            if(!items) throw new Error("Cannot clear a null cart.");
+            setItems([]);
             await updateDoc(userDataCartDocRef, {
                 items: []
             });
