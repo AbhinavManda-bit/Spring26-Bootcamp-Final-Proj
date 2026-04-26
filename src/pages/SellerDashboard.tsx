@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import type { Order, Product, SellerStats } from "../types";
 import { getDataOfAllItemsInCatalog, getSellersProducts } from "../Utilities/productUtilities";
 import { getAllOrderData } from "../Utilities/orderUtilities";
@@ -14,25 +14,22 @@ Page Description:
 --> View sold items
 */
 
-// read current User through useAuth()
-// page func comp only renders if user logged in is seller. 
-// if they are a buyer, redirect to product catalog
-
-// state var to hold a current product catalog list for this seller's product.
-
 // HELPER FUNCTIONS
 // GET SELLERS PRODUCTS
 // (read all products. return an array of products with this user's seller id)
-
-// - fetch products that belong to the currently logged in seller
-// - fetch sold items for a given seller
 
 const SellerDashboard = () => {
 
     const { currentUser, currentUserData } = useAuth();
     const navigate = useNavigate();
 
+    // state var to hold a current product catalog list for this seller's product.
+    const [sellersProducts, setSellersProducts] = useState<Product[] | null>(null);
+    // state var for loading status
+    const [loading, setLoading] = useState(true);
+
     // HELPER FUNCTIONS
+
     // GET SELLERS PRODUCTS
     // (read all products. return an array of products with this user's seller id)
     const getSellersProductData = async () => {
@@ -44,19 +41,10 @@ const SellerDashboard = () => {
             )
             return thisSellersProducts;
         } else {
+            navigate("/");
             throw new Error("No user is logged in.");
         }
     }
-
-    const [sellersProducts, setSellersProducts] = useState<Product[] | null>(null);
-
-    // load this seller's product data into our state seller product list
-    useEffect(() => {
-        const getVendProdData = async () => {
-            setSellersProducts(await getSellersProductData());
-        }
-        getVendProdData();
-    }, [])
 
     // GET SELLERS ORDER STATS
     // - read products and orders
@@ -70,6 +58,7 @@ const SellerDashboard = () => {
     // array, it adds this item's price to the revenue made by this seller. and adds one
     // to products sold by this seller)
     const getSellerOrderStats = async () => {
+        setLoading(true);
         if(currentUserData && currentUser){
             const currentSellerId = currentUserData.role;
             const currentSellersProducts = await getSellersProducts(currentSellerId);
@@ -89,26 +78,39 @@ const SellerDashboard = () => {
                     }
                     return {totalRevenue: accRevenue, totalProductsSold: accProductsSold};
                 }, baseAcc);
+            setLoading(false);
             return sellersCalculatedStats;
         } else {
+            navigate("/");
             throw new Error("No user is logged in.");
         }
     }
 
-    // Redirects to product catalog as a side effect. But returns a string we can use
+    // load this seller's product data into our state seller product list
+    useEffect(() => {
+        const getVendProdData = async () => {
+            setLoading(true);
+            setSellersProducts(await getSellersProductData());
+        }
+        getVendProdData();
+    }, [])
+
+    // Redirects to specified path as a side effect. But returns a string we can use
     // in our func comp while redirecting.
-    const redirectToCatalog = () => {
-        navigate("/product_catalog");
-        return "Redirecting to catalog..."
+    const redirectToPath = (path: string) => {
+        navigate(path);
+        return "Redirecting..."
     }
 
     return (
+        // only render our func comp when a user is logged in
+        // and only if that user is a seller
         <>{
             currentUserData ? 
             (currentUserData.role == "seller" ? 
-                redirectToCatalog()
-                : "Welcome, " + currentUserData?.name) 
-            : redirectToCatalog()}</>
+                "Welcome, " + currentUserData?.name
+                : redirectToPath("/product-catalog")) 
+            : redirectToPath("/")}</>
     )
 }
 
