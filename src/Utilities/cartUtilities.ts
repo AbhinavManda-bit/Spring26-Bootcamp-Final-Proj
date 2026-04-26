@@ -4,7 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import type { CartData } from "../types";
 
-// helper function to pull this user's cart data. returns null if the user is a vendor. 
+// helper function to pull this user's cart data. returns null if the user is a seller. 
 // or if the inputted user is null (no user logged in)
 // if the first data pull leads to blank data, then 
 // retries every 1 second to hit firestore if it can't find the user's entry in firestore

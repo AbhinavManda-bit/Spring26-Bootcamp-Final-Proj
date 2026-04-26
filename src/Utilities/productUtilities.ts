@@ -41,16 +41,16 @@ export const getItemPrice = async (productId: string) => {
     }
 }
 
-//get vendors products
-//given an id of a vendor, returns a product[] of all products uploaded by this vendor
-export const getVendorsProducts = async (vendorUserId: string) => {
+//get sellers products
+//given an id of a seller, returns a product[] of all products uploaded by this seller
+export const getSellersProducts = async (sellerUserId: string) => {
     const collectionRef = collection(db, "products");
-    const q = query(collectionRef, where("sellerId", "==", vendorUserId));
+    const q = query(collectionRef, where("sellerId", "==", sellerUserId));
     let querySnapshot;
     try {
         querySnapshot = await getDocs(q);
     } catch {
-        throw new Error("DB read for a specific vendor's products failed");
+        throw new Error("DB read for a specific seller's products failed");
     }
     const docsData: Product[] = querySnapshot.docs.map((docSnap) => {
         return ({

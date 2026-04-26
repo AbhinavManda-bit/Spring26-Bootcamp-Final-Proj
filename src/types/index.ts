@@ -57,7 +57,7 @@ export interface CartData {
   items: string[];
 }
 
-export interface VendorStats {
+export interface SellerStats {
   totalRevenue: number;
   totalProductsSold: number;
 }
