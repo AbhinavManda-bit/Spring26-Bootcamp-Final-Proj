@@ -33,11 +33,24 @@ export interface Product {
   category: string;
   location: Location;
   imageUrl: string;
+  sellerId: number;
 }
 
 export interface Order {
   id: string;
   items: Product[];
   total: number;
-  location: Location;
+}
+
+export interface CartContextType {
+  items: string[] | null; //array of product ID's
+  loadingCart: boolean;
+  addItem: (productId: string) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  calcTotalPrice: () => Promise<number>;
+}
+
+export interface CartData {
+  items: string[];
 }

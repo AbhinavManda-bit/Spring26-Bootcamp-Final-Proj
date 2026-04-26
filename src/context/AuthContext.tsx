@@ -16,6 +16,7 @@ Context Description:
 - Stores the current user, their role (buyer/seller), and provides functions for login, signup, logout, and password reset via email.
 - Also handles persisting auth state (so users stay logged in on refresh) and is used to protect routes like 
 Profile and Seller Dashboard.
+
 */
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
