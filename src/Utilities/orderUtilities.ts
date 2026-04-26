@@ -17,6 +17,8 @@ export const getAllOrderData = async () => {
                     ...docSnap.data()
                 } as Order);
     });
-
+    for(const order of docsData){
+        console.log("[GETALLORDERDATA] order id: " + order.id + " items: " + order.items);
+    }
     return docsData;
 }

@@ -36,13 +36,12 @@ export interface Product {
   imageUrl: string;
   sellerId: string;
   sold: boolean;
-}
+} 
 
 export interface Order {
   id: string;
   buyerId: string;
   items: string[]; //array of product id's in an order
-  total: number; //total price of the items in an order
 }
 
 export interface CartContextType {

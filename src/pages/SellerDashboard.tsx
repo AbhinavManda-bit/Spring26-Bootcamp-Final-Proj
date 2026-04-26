@@ -65,20 +65,27 @@ const SellerDashboard = () => {
         if(currentUserData && currentUser){
             const currentSellerId = currentUserData.role;
             const currentSellersProducts = await getSellersProducts(currentSellerId);
+            console.log("initial fetch of current sellers products: " + currentSellersProducts);
             const allOrdersData = await getAllOrderData();
             // fold left workflow!!!
             const baseAcc: SellerStats = {totalRevenue: 0, totalProductsSold: 0};
             const sellersCalculatedStats: SellerStats = 
                 allOrdersData.reduce((acc: SellerStats, order: Order) => {
+                    console.log("[GETSELLERORDERSTATS] order id: " + order.id + " items: " + order.items);
                     const thisSellersItemsInThisOrder = 
                         currentSellersProducts.filter((product) => {
                             order.items.includes(product.id);
                         });
+                    console.log("in the grand comparison.");
+                    console.log("order.items: " + order.items);
+                    console.log("current sellers products: " + currentSellersProducts);
+                    console.log("this sellers items in this order: " + thisSellersItemsInThisOrder);
                     let {totalRevenue: accRevenue, totalProductsSold: accProductsSold} = acc;
                     for (const orderItem of thisSellersItemsInThisOrder){
                         accRevenue += orderItem.price;
                         accProductsSold += 1;
                     }
+                    console.log("new acc rev: " + accRevenue + ", new acc prod sold: " + accProductsSold);
                     return {totalRevenue: accRevenue, totalProductsSold: accProductsSold};
                 }, baseAcc);
             setLoading(false);
@@ -172,9 +179,9 @@ const SellerDashboard = () => {
                             </div>
                             {/* div to wrap the list of products */}
                             <div className="flex flex-col overflow-y-auto max-h-[70vh] w-full pr-2">
-                                sellersProducts && sellersProducts?.map((prod) => {
-                                    <ProductRow product=prod />
-                                })
+                                {sellersProducts && sellersProducts?.map((prod) => {
+                                    return <ProductRow key={prod.id} product={prod} />
+                                })}
                             </div>
                         </div>
                     </div>
