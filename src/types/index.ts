@@ -1,4 +1,4 @@
-export type Location = "Van Munching" | "McKeldin" | "Clarice";
+export type Location = "📊 Van Munching" | "📚 McKeldin Library" | "🎶 Clarice" | "🍽️ STAMP" | "💻 Iribe"; 
 
 export interface User {
   id: string;
