@@ -39,8 +39,9 @@ export interface Product {
 
 export interface Order {
   id: string;
-  items: Product[];
-  total: number;
+  buyerId: string;
+  items: string[]; //array of product id's in an order
+  total: number; //total price of the items in an order
 }
 
 export interface CartContextType {
@@ -54,4 +55,9 @@ export interface CartContextType {
 
 export interface CartData {
   items: string[];
+}
+
+export interface VendorStats {
+  totalRevenue: number;
+  totalProductsSold: number;
 }

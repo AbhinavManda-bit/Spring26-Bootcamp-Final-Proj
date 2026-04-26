@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import type { Product } from "../types";
-import { getDataOfAllItemsInCatalog } from "../Utilities/productUtilities";
-import { get } from "http";
+import type { Order, Product, VendorStats } from "../types";
+import { getDataOfAllItemsInCatalog, getVendorsProducts } from "../Utilities/productUtilities";
+import { getAllOrderData } from "../Utilities/orderUtilities";
 
 /*
 Page Description:
@@ -26,15 +26,6 @@ Page Description:
 
 // - fetch products that belong to the currently logged in seller
 // - fetch sold items for a given vendor
-// GET VENDOR ORDER STATS
-// - read products and orders
-// return an object:
-// {total revenue made by this seller, total products sold by this seller}
-// (read the list of all orders. thread an accumulator through the array of all orders.
-// for each order, generates an array which is an intersection of this vendor's products
-// and the products in this order by productId. then for each item in this intersection
-// array, it adds this item's price to the revenue made by this seller. and adds one
-// to products sold by this seller)
 
 const SellerDashboard = () => {
 
@@ -67,6 +58,42 @@ const SellerDashboard = () => {
         getVendProdData();
     }, [])
 
+    // GET VENDOR ORDER STATS
+    // - read products and orders
+    // return an object:
+    // {total revenue made by this seller, total products sold by this seller}
+    // (read the state var list of all orders. thread an accumulator through the array of all orders.
+    // for each order, generates an array which is an intersection of this vendor's products
+    // and the products in this order by productId. then for each item in this intersection
+    // array, it adds this item's price to the revenue made by this seller. and adds one
+    // to products sold by this seller)
+    const getVendorOrderStats = async () => {
+        if(currentUserData && currentUser){
+            const currentVendorId = currentUserData.role;
+            const currentVendorsProducts = await getVendorsProducts(currentVendorId);
+            const allOrdersData = await getAllOrderData();
+            const baseAcc: VendorStats = {totalRevenue: 0, totalProductsSold: 0};
+            const vendorsCalculatedStats: VendorStats = 
+                allOrdersData.reduce((acc: VendorStats, order: Order) => {
+                    const thisVendorsItemsInThisOrder = 
+                        currentVendorsProducts.filter((product) => {
+                            order.items.includes(product.id);
+                        });
+                    let {totalRevenue: accRevenue, totalProductsSold: accProductsSold} = acc;
+                    for (const orderItem of thisVendorsItemsInThisOrder){
+                        accRevenue += orderItem.price;
+                        accProductsSold += 1;
+                    }
+                    return {totalRevenue: accRevenue, totalProductsSold: accProductsSold};
+                }, baseAcc);
+            return vendorsCalculatedStats;
+        } else {
+            throw new Error("No user is logged in.");
+        }
+    }
+
+    // Redirects to product catalog as a side effect. But returns a string we can use
+    // in our func comp while redirecting.
     const redirectToCatalog = () => {
         navigate("/product_catalog");
         return "Redirecting to catalog..."

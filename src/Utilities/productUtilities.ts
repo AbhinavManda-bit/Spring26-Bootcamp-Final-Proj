@@ -1,20 +1,25 @@
 //utility function to get a data array of all the items in the current product catalog
 
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../services/firebase";
 import type { Product } from "../types";
 
 // (as an array of products)
 export const getDataOfAllItemsInCatalog = async () => {
     const collectionRef = collection(db, "products");
-    const querySnapshot = await getDocs(collectionRef);
+    let querySnapshot;
+    try{
+        querySnapshot = await getDocs(collectionRef);
+    } catch {
+        throw new Error("DB read for all items in catalog failed.");
+    }
 
     const docsData: Product[] = querySnapshot.docs.map((docSnap) => {
         return ({
             id: docSnap.id,
             ...docSnap.data()
         } as Product);
-    })
+    });
 
     return docsData;
 }
@@ -34,4 +39,25 @@ export const getItemPrice = async (productId: string) => {
     } else {
         throw new Error("Could not find price of item");
     }
+}
+
+//get vendors products
+//given an id of a vendor, returns a product[] of all products uploaded by this vendor
+export const getVendorsProducts = async (vendorUserId: string) => {
+    const collectionRef = collection(db, "products");
+    const q = query(collectionRef, where("sellerId", "==", vendorUserId));
+    let querySnapshot;
+    try {
+        querySnapshot = await getDocs(q);
+    } catch {
+        throw new Error("DB read for a specific vendor's products failed");
+    }
+    const docsData: Product[] = querySnapshot.docs.map((docSnap) => {
+        return ({
+            id: docSnap.id,
+            ...docSnap.data()
+        } as Product);
+    });
+
+    return docsData;
 }
