@@ -1,5 +1,5 @@
 import { auth } from "../services/firebase";
-import { type AuthContextType, type CartData, type Role, type UserData } from "../types/index";
+import { type AuthContextType, type Role, type UserData } from "../types/index";
 import { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, 
         type User, 
@@ -7,9 +7,8 @@ import { onAuthStateChanged,
         signInWithEmailAndPassword,
         signOut,
         sendPasswordResetEmail } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
-import { pullUserData } from "../Utilities/userUtilities";
 
 /*
 Context Description:
@@ -17,6 +16,7 @@ Context Description:
 - Stores the current user, their role (buyer/seller), and provides functions for login, signup, logout, and password reset via email.
 - Also handles persisting auth state (so users stay logged in on refresh) and is used to protect routes like 
 Profile and Seller Dashboard.
+
 */
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +31,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentUserData, setCurrentUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // helper function to pull userdata from firestore given a user. return null if user passed in is null
+    // or if the user's data cannot be found in firestore
+    // if it can't find the data, then it retries after 1 second delays repeated until it is found
+    // (in the edge case that we try to look up (in the auth change listener function) 
+    // the data before it has been inserted on account sign up)
+    const pullUserData = async (user: User) => {
+        if(user){
+            const userId = user.uid;
+            const userDataDocRef = doc(db, "users", userId);
+            let userDataSnap = await getDoc(userDataDocRef);
+            if(!userDataSnap.exists()){
+                while(true) {
+                    await new Promise(r => setTimeout(r, 1000)); 
+                    userDataSnap = await getDoc(userDataDocRef);
+                    if(userDataSnap.exists()) break;
+                }
+            }
+            const userData = userDataSnap.data() as UserData;
+            return userData;
+        } else {
+            return null;
+        }
+    }
 
     // use effect that attaches an auth state change listener to update our context for the user
     // when the user changes on the auth
@@ -66,7 +90,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // utility function for sign up. validates input parameters (throwing error if not valid), 
     // creates a new user in the auth, and inserts their user data into firestore.
-    // sets their cart to empty if it is a buyer signing up
     const signupAndLogin = async (name: string, email: string, password: string, role: Role) => {
         setLoading(true);
         const innerSignupAndLoginFunc = async () => {
@@ -111,14 +134,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 role: role
             };
             await setDoc(newUserDocRef, newUserDataToInsert);
-            // if the sign up new user is a buyer, insert a blank array for their 
-            if(role == "buyer") {
-                const newUserCartDocRef = doc(db, "carts", newUserId);
-                const newUserCartDataToInsert: CartData = {
-                    items: []
-                }
-                await setDoc(newUserCartDocRef, newUserCartDataToInsert);
-            }
         } catch (error) {
             let errorMessage: string = "Unknown error."
             if(error instanceof Error){

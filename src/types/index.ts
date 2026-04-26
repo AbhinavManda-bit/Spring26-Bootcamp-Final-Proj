@@ -18,6 +18,10 @@ export interface UserData {
   name: string;
   email: string;
   role: Role;
+  // fields to add when user saves profile info 
+  bio?: string;           
+  favStyle?: string;      
+  profilePicture?: string;
 }
 
 export interface Product {
