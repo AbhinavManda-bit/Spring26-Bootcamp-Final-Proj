@@ -50,7 +50,7 @@ const SellerDashboard = () => {
 
     const [sellersProducts, setSellersProducts] = useState<Product[] | null>(null);
 
-    // load this vendor's product data into our state vendor product list
+    // load this vendor's product data into our state seller product list
     useEffect(() => {
         const getVendProdData = async () => {
             setSellersProducts(await getVendorsProductData());
@@ -102,7 +102,7 @@ const SellerDashboard = () => {
     return (
         <>{
             currentUserData ? 
-            (currentUserData.role != "buyer" ? 
+            (currentUserData.role == "seller" ? 
                 redirectToCatalog()
                 : "Welcome, " + currentUserData?.name) 
             : redirectToCatalog()}</>
