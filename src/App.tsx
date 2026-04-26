@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import ProfilePage from "./pages/ProfilePage";
+import SellerDashboard from './pages/SellerDashboard';
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/signup" element={<SignupPage/>}/>
                 <Route path="/recover" element={<ForgotPasswordPage/>}/>
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/seller-dash" element={<SellerDashboard />} />
             </Routes>
         </BrowserRouter>
     )

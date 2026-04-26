@@ -33,7 +33,8 @@ export interface Product {
   category: string;
   location: Location;
   imageUrl: string;
-  sellerId: number;
+  sellerId: string;
+  sold: boolean;
 }
 
 export interface Order {
