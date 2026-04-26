@@ -62,9 +62,11 @@ const SellerDashboard = () => {
     // - read products and orders
     // return an object:
     // {total revenue made by this seller, total products sold by this seller}
-    // (read the state var list of all orders. thread an accumulator through the array of all orders.
+    // (read the state var list of all seller products. 
+    // thread an accumulator through an array of all orders.
     // for each order, generates an array which is an intersection of this seller's products
-    // and the products in this order by productId. then for each item in this intersection
+    // and the products in this order by productId. [basically which of these sellers products
+    // were in this order]. then for each item in this intersection
     // array, it adds this item's price to the revenue made by this seller. and adds one
     // to products sold by this seller)
     const getSellerOrderStats = async () => {
@@ -72,6 +74,7 @@ const SellerDashboard = () => {
             const currentSellerId = currentUserData.role;
             const currentSellersProducts = await getSellersProducts(currentSellerId);
             const allOrdersData = await getAllOrderData();
+            // fold left workflow!!!
             const baseAcc: SellerStats = {totalRevenue: 0, totalProductsSold: 0};
             const sellersCalculatedStats: SellerStats = 
                 allOrdersData.reduce((acc: SellerStats, order: Order) => {
