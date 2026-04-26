@@ -31,6 +31,7 @@ export interface Product {
   price: number;
   size: string;
   category: string;
+  gender: string;
   location: Location;
   imageUrl: string;
   sellerId: string;
