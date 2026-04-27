@@ -60,12 +60,10 @@ const SellerDashboard = () => {
     // were in this order]. then for each item in this intersection
     // array, it adds this item's price to the revenue made by this seller. and adds one
     // to products sold by this seller)
-    const getSellerOrderStats = async () => {
+    const getSellerOrderStats = async (currentSellerProducts: Product[]) => {
         setLoading(true);
         if(currentUserData && currentUser){
-            const currentSellerId = currentUserData.role;
-            const currentSellersProducts = await getSellersProducts(currentSellerId);
-            console.log("initial fetch of current sellers products: " + currentSellersProducts);
+            console.log("initial fetch of current sellers products: " + currentSellerProducts);
             const allOrdersData = await getAllOrderData();
             // fold left workflow!!!
             const baseAcc: SellerStats = {totalRevenue: 0, totalProductsSold: 0};
@@ -73,12 +71,12 @@ const SellerDashboard = () => {
                 allOrdersData.reduce((acc: SellerStats, order: Order) => {
                     console.log("[GETSELLERORDERSTATS] order id: " + order.id + " items: " + order.items);
                     const thisSellersItemsInThisOrder = 
-                        currentSellersProducts.filter((product) => {
-                            order.items.includes(product.id);
+                        currentSellerProducts.filter((product) => {
+                            return order.items.includes(product.id);
                         });
                     console.log("in the grand comparison.");
                     console.log("order.items: " + order.items);
-                    console.log("current sellers products: " + currentSellersProducts);
+                    console.log("current sellers products: " + currentSellerProducts);
                     console.log("this sellers items in this order: " + thisSellersItemsInThisOrder);
                     let {totalRevenue: accRevenue, totalProductsSold: accProductsSold} = acc;
                     for (const orderItem of thisSellersItemsInThisOrder){
@@ -92,7 +90,7 @@ const SellerDashboard = () => {
             return sellersCalculatedStats;
         } else {
             navigate("/");
-            throw new Error("No user is logged in.");
+            throw new Error("No user is logged in or sellers or products are not set.");
         }
     }
 
@@ -101,8 +99,9 @@ const SellerDashboard = () => {
     useEffect(() => {
         const getVendProdData = async () => {
             setLoading(true);
-            setSellersProducts(await getSellersProductData());
-            setSellersStats(await getSellerOrderStats());
+            const products = await getSellersProductData();
+            setSellersProducts(products);
+            setSellersStats(await getSellerOrderStats(products));
         }
         getVendProdData();
     }, [])
@@ -147,7 +146,7 @@ const SellerDashboard = () => {
                                     REVENUE
                                 </p>
                                 <p>
-                                    ${sellerStats?.totalRevenue}.00
+                                   ${sellerStats?.totalRevenue}
                                 </p>
                             </div>
                             {/* third statistic card (total products sold) */}
