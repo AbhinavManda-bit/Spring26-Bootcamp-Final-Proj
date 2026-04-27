@@ -11,7 +11,7 @@ Page Description:
 */
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { Product, Location } from '../types';
 import { filterProducts, type ProductFilters } from '../utils/filterProducts';
 import LocationFilterBar from '../Components/LocationFilterBar';
@@ -22,6 +22,7 @@ const MOCK_PRODUCTS: Product[] = [];
 export default function CatalogPage() {
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') ?? '';
+  const navigate = useNavigate();
 
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -72,7 +73,7 @@ export default function CatalogPage() {
           ) : (
             <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
               {filteredProducts.map((product) => (
-                <div key={product.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={product.id} className="border border-gray-200 rounded-lg p-4 cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
                   <h2 className="font-semibold text-gray-900">{product.title}</h2>
                   <p className="text-gray-600">${product.price}</p>
                 </div>
