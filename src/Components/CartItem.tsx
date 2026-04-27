@@ -39,7 +39,8 @@ const CartItem = ({ product, removeItem }: CartItems) => {
       <button
         onClick={() => removeItem(product.id)}
         className="text-xl"
-      > ❌</button>
+      > Remove
+      </button>
     </div>
   );
 };
