@@ -12,7 +12,7 @@ interface LocationTags {
 
 const LocationTag = ({ product }: LocationTags) => {
     return (
-        <div className="bg-[#E05353] font-semibold text-white text-sm py-1 rounded-full">
+        <div className="bg-[#E05353] font-semibold text-white text-sm py-1 px-3 rounded-full">
             {product.location}
         </div>
     );
