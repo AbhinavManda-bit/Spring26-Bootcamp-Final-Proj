@@ -1,8 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
-import type { Order, Product, SellerStats, UserData } from "../types";
-import { getDataOfAllItemsInCatalog } from "../Utilities/productUtilities";
+import type {
+  Category,
+  Gender,
+  Order,
+  Product,
+  SellerStats,
+  Size,
+  UserData,
+  Location,
+} from "../types";
+import {
+  deleteProduct,
+  getDataOfAllItemsInCatalog,
+  upsertProductData,
+} from "../Utilities/productUtilities";
 import { getAllOrderData } from "../Utilities/orderUtilities";
 import ProductRow from "../Components/ProductRow";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -33,6 +46,9 @@ const SellerDashboard = () => {
   const [sellerStats, setSellersStats] = useState<SellerStats | null>(null);
   // state var for loading status
   const [loading, setLoading] = useState(true);
+
+  // ref for automatic scrolling
+  const productListRef = useRef<HTMLDivElement | null>(null);
 
   // HELPER FUNCTIONS
 
@@ -143,7 +159,7 @@ const SellerDashboard = () => {
     if (
       currentUser &&
       currentUserData &&
-      currentUserData.productsUploaded !== undefined
+      currentUserData.productsAttemptedToUpload !== undefined
     ) {
       const userDataDocRef = doc(db, "users", currentUser.uid);
       try {
@@ -153,19 +169,19 @@ const SellerDashboard = () => {
         const userData = userDataDocSnap.data() as UserData;
         if (userData.role != "seller")
           throw new Error("User logged in is not a seller.");
-        if (userData.productsUploaded === undefined)
+        if (userData.productsAttemptedToUpload === undefined)
           throw new Error("Can't find the number of products uploaded");
         await updateDoc(userDataDocRef, {
-          productsUploaded: userData.productsUploaded + 1,
+          productsAttemptedToUpload: userData.productsAttemptedToUpload + 1,
         });
       } catch {
         throw new Error("Firestore error");
       }
       const blankProductData: Product = {
         id:
-          (currentUserData.productsUploaded + 1).toString() +
-          currentUser?.uid +
-          "-",
+          (currentUserData.productsAttemptedToUpload + 1).toString() +
+          "----" +
+          currentUser?.uid,
         title: "",
         description: "",
         price: 0.0,
@@ -177,7 +193,7 @@ const SellerDashboard = () => {
           "https://res.cloudinary.com/ds5n471yb/image/upload/v1777262846/htf80xijwngsfgem9wgt.png",
         sellerId: currentUser.uid,
         sold: false,
-        editByDefault: true
+        editByDefault: true,
       };
       if (sellersProducts) {
         setSellersProducts([...sellersProducts, blankProductData]);
@@ -185,9 +201,79 @@ const SellerDashboard = () => {
           "updated sellers products state var by adding a blank one: " +
             sellersProducts.length,
         );
+        setSellersProducts([...sellersProducts, blankProductData]);
+
+        // auto scroll to the bottom of the product table
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            productListRef.current?.scrollTo({
+              top: productListRef.current.scrollHeight,
+              behavior: "smooth",
+            });
+  });
+});
       }
     } else {
       throw new Error("User data error.");
+    }
+  };
+
+  const handleSubmitProductInfoClick = async (
+    id: string,
+    title: string,
+    description: string,
+    price: number,
+    size: Size,
+    category: Category,
+    gender: Gender,
+    location: Location,
+    imageUrl: string,
+    sellerId: string,
+  ) => {
+    await upsertProductData(
+      id,
+      title,
+      description,
+      price,
+      size,
+      category,
+      gender,
+      location,
+      imageUrl,
+      sellerId,
+    );
+    const productToAdd: Product = {
+      id: id,
+      title: title,
+      description: description,
+      size: size,
+      category: category,
+      gender: gender,
+      location: location,
+      imageUrl: imageUrl,
+      sellerId: sellerId,
+      price: price,
+      sold: false,
+    };
+    if(sellersProducts){
+      if(sellersProducts?.find((product) => {return product.id === id})){
+        setSellersProducts(sellersProducts.map((product) => {
+          return product.id === id ? productToAdd : product
+        }));
+      } else {
+        setSellersProducts([...sellersProducts, productToAdd]);
+      }
+    }
+  };
+
+  const handleDeleteProductClick = async (productId: string) => {
+    await deleteProduct(productId);
+    if (sellersProducts) {
+      setSellersProducts(
+        sellersProducts?.filter((product) => {
+          return product.id !== productId;
+        }),
+      );
     }
   };
 
@@ -255,13 +341,17 @@ const SellerDashboard = () => {
                     <p>ACTION</p>
                   </div>
                   {/* div to wrap the list of products */}
-                  <div className="flex flex-col overflow-y-auto max-h-[50vh] w-full pr-2">
+                  <div 
+                  ref={productListRef}
+                  className="flex flex-col overflow-y-auto max-h-[45vh] w-full pr-2">
                     {sellersProducts &&
                       sellersProducts?.map((prod) => {
                         return (
                           <ProductRow
                             key={prod.id}
                             product={prod}
+                            onDeleteProduct={handleDeleteProductClick}
+                            onSubmitProduct={handleSubmitProductInfoClick}
                             editDefault={
                               prod.editByDefault ? prod.editByDefault : false
                             }

@@ -1,11 +1,38 @@
-import { type Product, type Location, type Size, type Gender, type Category } from "../types";
+import {
+  type Product,
+  type Location,
+  type Size,
+  type Gender,
+  type Category,
+} from "../types";
 import TrashIcon from "../assets/trash_icon.png";
 import PenIcon from "../assets/pen_icon.png";
 import CheckIcon from "../assets/checkmark_icon.png";
 import { useState, type ChangeEvent } from "react";
 // func comp to be used as a product in the seller dashboard - seller catalog
 
-const ProductRow = ({ product, editDefault }: { product: Product, editDefault: boolean }) => {
+const ProductRow = ({
+  product,
+  editDefault,
+  onDeleteProduct,
+  onSubmitProduct,
+}: {
+  product: Product;
+  editDefault: boolean;
+  onDeleteProduct: (productId: string) => Promise<void>;
+  onSubmitProduct: (
+    id: string,
+    title: string,
+    description: string,
+    price: number,
+    size: Size,
+    category: Category,
+    gender: Gender,
+    location: Location,
+    imageUrl: string,
+    sellerId: string,
+  ) => Promise<void>;
+}) => {
   const [editing, setEditing] = useState(editDefault);
 
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl);
@@ -60,6 +87,36 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
     setNewImageUrl(dataFromResponse.secure_url);
   };
 
+  const onTrashClick = async () => {
+    await onDeleteProduct(product.id);
+  };
+
+  const onCheckmarkClick = async () => {
+    if (
+      titleValid &&
+      descriptionValid &&
+      genderValid &&
+      categoryValid &&
+      sizeValid &&
+      priceValid &&
+      locationValid
+    ) {
+      await onSubmitProduct(
+        product.id,
+        newTitle,
+        newDescription,
+        newPrice,
+        newSize,
+        newCategory,
+        newGender,
+        newLocation,
+        newImageUrl,
+        product.sellerId,
+      );
+      setEditing(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1.5fr_1fr] py-6 border-b items-center">
       {/* div for the product image and product title (going in product column) */}
@@ -86,10 +143,12 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
             {/* built a custom label for the image uploader. because we hate 
             how we can't change it's format! */}
             <label
-                htmlFor="imageUploader"
-                className="w-24 h-20 border border-gray-300 bg-white rounded-lg 
+              htmlFor="imageUploader"
+              className="w-20 h-20 border border-gray-300 bg-white rounded-lg 
                         px-3 py-2 text-sm focus:outline-none text-center"
-            >Upload New Image</label>
+            >
+              Upload New Image
+            </label>
           </div>
         )}
         {!editing ? (
@@ -151,16 +210,16 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
               <option value="Unisex">Unisex</option>
             </select>
             {!genderValid && (
-              <p className="text-red-500 text-xs mt-1">
-                Select a gender.
-              </p>
+              <p className="text-red-500 text-xs mt-1">Select a gender.</p>
             )}
           </div>
           {/* div to hold category and error message */}
           <div className="flex flex-col justify-center gap-2">
             <select
               value={newCategory}
-              onChange={(event) => setNewCategory(event.target.value as Category)}
+              onChange={(event) =>
+                setNewCategory(event.target.value as Category)
+              }
               className="w-26 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
             >
               <option value="Tops">Tops</option>
@@ -168,9 +227,7 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
               <option value="Accessories">Accessories</option>
             </select>
             {!categoryValid && (
-              <p className="text-red-500 text-xs mt-1">
-                Select a category.
-              </p>
+              <p className="text-red-500 text-xs mt-1">Select a category.</p>
             )}
           </div>
         </div>
@@ -197,10 +254,8 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
             <option value="XXL">XXL</option>
           </select>
           {!sizeValid && (
-              <p className="text-red-500 text-xs mt-1">
-                Select a size.
-              </p>
-            )}
+            <p className="text-red-500 text-xs mt-1">Select a size.</p>
+          )}
         </div>
       )}
       {/* product price */}
@@ -258,14 +313,13 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
             <option value="Clarice">Clarice</option>
           </select>
           {!locationValid && (
-              <p className="text-red-500 text-xs mt-1">
-                Select a location.
-              </p>
-            )}
+            <p className="text-red-500 text-xs mt-1">Select a location.</p>
+          )}
         </div>
       )}
-      {/* div to hold images for editing and removing an item */}
+      {/* actions column */}
       {!editing ? (
+        // div to hold images for toggling editing and removing an item
         <div>
           {!product.sold && (
             <div className="flex gap-4">
@@ -278,12 +332,14 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
               <img
                 className="w-6 h-6"
                 src={TrashIcon}
+                onClick={() => onTrashClick()}
                 style={{ cursor: "pointer" }}
               />
             </div>
           )}
         </div>
       ) : (
+        // div to hold images for toggling editing and submitting item info
         <div>
           {!product.sold && (
             <div className="flex gap-4">
@@ -296,6 +352,7 @@ const ProductRow = ({ product, editDefault }: { product: Product, editDefault: b
               <img
                 className="w-6 h-6"
                 src={CheckIcon}
+                onClick={() => onCheckmarkClick()}
                 style={{ cursor: "pointer" }}
               />
             </div>

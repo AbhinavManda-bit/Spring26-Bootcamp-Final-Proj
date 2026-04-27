@@ -11,7 +11,12 @@ export interface AuthContextType {
   currentUser: User | null;
   currentUserData: UserData | null;
   loading: boolean;
-  signupAndLogin: (name: string, email: string, password: string, role: Role) => Promise<void>;
+  signupAndLogin: (
+    name: string,
+    email: string,
+    password: string,
+    role: Role,
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   sendResetPWEmail: (email: string) => Promise<void>;
@@ -22,11 +27,11 @@ export interface UserData {
   name: string;
   email: string;
   role: Role;
-  // fields to add when user saves profile info 
-  bio?: string;           
-  favStyle?: string;      
+  // fields to add when user saves profile info
+  bio?: string;
+  favStyle?: string;
   profilePicture?: string;
-  productsUploaded?: number;
+  productsAttemptedToUpload?: number;
 }
 
 export interface Product {
@@ -42,7 +47,7 @@ export interface Product {
   sellerId: string;
   sold: boolean;
   editByDefault?: boolean;
-} 
+}
 
 export interface Order {
   id: string;
