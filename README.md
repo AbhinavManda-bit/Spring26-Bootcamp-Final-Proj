@@ -1,4 +1,4 @@
-# TerpThrift 
+# ThriftUMD 
 
 A campus-only thrift marketplace for UMD students to buy and sell clothing with fixed pickup locations.
 
