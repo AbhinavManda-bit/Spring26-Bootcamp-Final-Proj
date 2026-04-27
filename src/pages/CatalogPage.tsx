@@ -10,54 +10,78 @@ Page Description:
 --> Clicking a product → ProductPage
 */
 
-import { useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import type { Product, Location } from '../types';
+import { filterProducts, type ProductFilters } from '../utils/filterProducts';
+import LocationFilterBar from '../Components/LocationFilterBar';
+import CatalogSidebar from '../Components/FilterSidebar';
 
-const CatalogPage = () => {
-    
-    const { currentUser, currentUserData } = useAuth();
-    const navigate = useNavigate();
+const MOCK_PRODUCTS: Product[] = [];
 
-    const [catalogProducts, setCatalogProducts] = useState<Product[] | null>(null);
-    const [loading, setLoading] = useState(true);
+export default function CatalogPage() {
+  const [searchParams] = useSearchParams();
+  const searchTerm = searchParams.get('search') ?? '';
+  const navigate = useNavigate();
 
-    // Redirects to specified path as a side effect. But returns a string we can use
-    // in our func comp while redirecting.
-    const redirectToPath = (path: string) => {
-        navigate(path);
-        return "Redirecting..."
-    }
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedGender, setSelectedGender] = useState<'Men' | 'Women' | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    return (
-        // only render our func comp when a user is logged in
-        // and only if that user is a buyer
-        <>{
-            currentUserData ? 
-            (currentUserData.role == "seller" ? 
-                "Welcome, " + currentUserData?.name
-                : redirectToPath("seller-dash")) 
-            : redirectToPath("/")}</>
-    )
+  useEffect(() => {
+    // TODO: fetch products from Firestore
+    setProducts(MOCK_PRODUCTS);
+  }, []);
+
+  const filters: ProductFilters = {
+    location: selectedLocation,
+    gender: selectedGender,
+    category: selectedCategory,
+    size: null,
+    searchTerm,
+  };
+
+  const filteredProducts = filterProducts(products, filters);
+
+  return (
+    <>
+      <LocationFilterBar
+        selectedLocation={selectedLocation}
+        onSelectLocation={setSelectedLocation}
+      />
+
+      <div className="flex" style={{ minHeight: 'calc(100vh - 112px)' }}>
+        <CatalogSidebar
+          selectedGender={selectedGender}
+          selectedCategory={selectedCategory}
+          onSelectGender={setSelectedGender}
+          onSelectCategory={setSelectedCategory}
+        />
+
+        <main className="flex-1 p-8">
+          {searchTerm && (
+            <p className="mb-4 text-gray-600">
+              Showing results for: <strong>{searchTerm}</strong>
+            </p>
+          )}
+
+          {filteredProducts.length === 0 ? (
+            <p className="text-gray-500">
+              {searchTerm ? `No items found for "${searchTerm}".` : 'No products yet.'}
+            </p>
+          ) : (
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="border border-gray-200 rounded-lg p-4 cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+                  <h2 className="font-semibold text-gray-900">{product.title}</h2>
+                  <p className="text-gray-600">${product.price}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+    </>
+  );
 }
-
-// current user
-
-// useState var for current filter (of type )
-// useState var for current product items (that will be displayed to user)
-// useState var for loading
-
-// useEffect, when filter changes, we should set loading to true
-// set the current product items to 
-// a new filtered list based on that filter
-// then set loading to false
-
-// functions
-// - searching query (input: string, output: product list)
-// - apply filters (input: filter[], output: product list)
-
-// func comp
-// if user is not logged in, navigate to login page
-// if user is logged in as seller, navigate to seller dashboard
-
-export default CatalogPage;

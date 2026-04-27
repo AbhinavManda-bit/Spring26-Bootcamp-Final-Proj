@@ -364,10 +364,10 @@ const SellerDashboard = () => {
             </div>
           )
         ) : (
-          <p>{redirectToPath("/product-catalog")}</p>
+          <p>{redirectToPath("/products")}</p>
         )
       ) : (
-        <p>{redirectToPath("/product-catalog")}</p>
+        <p>{redirectToPath("/products")}</p>
       )}
     </>
   );

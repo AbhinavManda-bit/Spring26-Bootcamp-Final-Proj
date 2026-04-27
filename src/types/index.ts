@@ -36,6 +36,7 @@ export interface UserData {
 
 export interface Product {
   id: string;
+  vendorId: string;
   title: string;
   description: string;
   price: number;
