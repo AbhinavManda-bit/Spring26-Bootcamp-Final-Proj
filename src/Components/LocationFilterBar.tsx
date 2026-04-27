@@ -12,7 +12,7 @@ const LOCATIONS: { value: Location; label: string; icon: React.ReactNode }[] = [
     icon: <BuildingIcon />,
   },
   {
-    value: 'McKeldin Library',
+    value: 'McKeldin',
     label: 'McKeldin Library',
     icon: <LibraryIcon />,
   },
