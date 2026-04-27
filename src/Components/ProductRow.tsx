@@ -1,12 +1,12 @@
-import { type Product, type Location } from "../types";
+import { type Product, type Location, type Size, type Gender, type Category } from "../types";
 import TrashIcon from "../assets/trash_icon.png";
 import PenIcon from "../assets/pen_icon.png";
 import CheckIcon from "../assets/checkmark_icon.png";
 import { useState, type ChangeEvent } from "react";
 // func comp to be used as a product in the seller dashboard - seller catalog
 
-const ProductRow = ({ product }: { product: Product }) => {
-  const [editing, setEditing] = useState(false);
+const ProductRow = ({ product, editDefault }: { product: Product, editDefault: boolean }) => {
+  const [editing, setEditing] = useState(editDefault);
 
   const [newImageUrl, setNewImageUrl] = useState(product.imageUrl);
   const [newTitle, setNewTitle] = useState(product.title);
@@ -15,14 +15,18 @@ const ProductRow = ({ product }: { product: Product }) => {
   const descriptionValid =
     newDescription.length >= 20 && newTitle.length <= 200;
   const [newGender, setNewGender] = useState(product.gender);
+  const genderValid = newGender != "";
   const [newCategory, setNewCategory] = useState(product.category);
+  const categoryValid = newCategory != "";
   const [newSize, setNewSize] = useState(product.size);
+  const sizeValid = newSize != "";
   const [newPrice, setNewPrice] = useState(product.price);
   const priceValid =
     /^[0-9]{1,5}(\.[0-9]{2})?/.test(newPrice.toString()) &&
     newPrice >= 0.01 &&
     newPrice <= 99999.99;
   const [newLocation, setNewLocation] = useState(product.location);
+  const locationValid = newLocation != "";
 
   const toggleEditing = () => {
     if (product.sold) {
@@ -92,7 +96,7 @@ const ProductRow = ({ product }: { product: Product }) => {
           <p>{product.title}</p>
         ) : (
           // div to hold name edit text box and error message for input
-          <div className="flex flex-col justify-center gap-2">
+          <div className="flex flex-col justify-center gap-2 w-35 text-center">
             <input
               type="text"
               className={`w-35 min-w-0 border bg-white
@@ -135,45 +139,69 @@ const ProductRow = ({ product }: { product: Product }) => {
       ) : (
         // div to hold gender selection and category selection
         <div className="flex flex-col gap-2">
-          <select
-            value={newGender}
-            onChange={(event) => setNewGender(event.target.value)}
-            className="w-25 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
-          >
-            <option value="Men">Men</option>
-            <option value="Women">Women</option>
-            <option value="Unisex">Unisex</option>
-          </select>
-          <select
-            value={newCategory}
-            onChange={(event) => setNewCategory(event.target.value)}
-            className="w-26 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
-          >
-            <option value="Tops">Tops</option>
-            <option value="Bottoms">Bottoms</option>
-            <option value="Accessories">Accessories</option>
-          </select>
+          {/* div to hold gender selection and error message */}
+          <div className="flex flex-col justify-center gap-2">
+            <select
+              value={newGender}
+              onChange={(event) => setNewGender(event.target.value as Gender)}
+              className="w-25 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
+            >
+              <option value="Men">Men</option>
+              <option value="Women">Women</option>
+              <option value="Unisex">Unisex</option>
+            </select>
+            {!genderValid && (
+              <p className="text-red-500 text-xs mt-1">
+                Select a gender.
+              </p>
+            )}
+          </div>
+          {/* div to hold category and error message */}
+          <div className="flex flex-col justify-center gap-2">
+            <select
+              value={newCategory}
+              onChange={(event) => setNewCategory(event.target.value as Category)}
+              className="w-26 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
+            >
+              <option value="Tops">Tops</option>
+              <option value="Bottoms">Bottoms</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+            {!categoryValid && (
+              <p className="text-red-500 text-xs mt-1">
+                Select a category.
+              </p>
+            )}
+          </div>
         </div>
       )}
       {/* product size */}
       {!editing ? (
         <p>{product.size}</p>
       ) : (
-        // product size selection
-        <select
-          value={newSize}
-          onChange={(event) => setNewSize(event.target.value)}
-          className="w-18 border border-gray-300 bg-white rounded-lg 
-                px-3 py-2 text-sm focus:outline-none"
-        >
-          <option value="XXS">XXS</option>
-          <option value="XS">XS</option>
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-          <option value="XXL">XXL</option>
-        </select>
+        // div for product size selection plus error message
+        <div className="flex flex-col justify-center gap-2">
+          {/* // product size selection */}
+          <select
+            value={newSize}
+            onChange={(event) => setNewSize(event.target.value as Size)}
+            className="w-18 border border-gray-300 bg-white rounded-lg 
+                  px-3 py-2 text-sm focus:outline-none"
+          >
+            <option value="XXS">XXS</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+          </select>
+          {!sizeValid && (
+              <p className="text-red-500 text-xs mt-1">
+                Select a size.
+              </p>
+            )}
+        </div>
       )}
       {/* product price */}
       {!editing ? (
@@ -184,7 +212,7 @@ const ProductRow = ({ product }: { product: Product }) => {
         </p>
       ) : (
         // div for a dollar sign plus price selection plus potential error message
-        <div className="flex flex-col items-center gap-1 w-22">
+        <div className="flex flex-col items-center gap-1 w-22 text-center">
           {/* inner div for price selection plus dollar sign message */}
           <div className="flex items-center gap-2">
             <p>$</p>
@@ -216,17 +244,25 @@ const ProductRow = ({ product }: { product: Product }) => {
       {!editing ? (
         <p>{product.location.toUpperCase()}</p>
       ) : (
-        // product size selection
-        <select
-          value={newLocation}
-          onChange={(event) => setNewLocation(event.target.value as Location)}
-          className="w-35 border border-gray-300 bg-white rounded-lg 
-                px-3 py-2 text-sm focus:outline-none"
-        >
-          <option value="Van Munching">Van Munching</option>
-          <option value="McKeldin">McKeldin</option>
-          <option value="Clarice">Clarice</option>
-        </select>
+        // div to hold product location selection and error message
+        <div className="flex flex-col justify-start">
+          {/* // product location selection */}
+          <select
+            value={newLocation}
+            onChange={(event) => setNewLocation(event.target.value as Location)}
+            className="w-35 border border-gray-300 bg-white rounded-lg 
+                  px-3 py-2 text-sm focus:outline-none"
+          >
+            <option value="Van Munching">Van Munching</option>
+            <option value="McKeldin">McKeldin</option>
+            <option value="Clarice">Clarice</option>
+          </select>
+          {!locationValid && (
+              <p className="text-red-500 text-xs mt-1">
+                Select a location.
+              </p>
+            )}
+        </div>
       )}
       {/* div to hold images for editing and removing an item */}
       {!editing ? (
