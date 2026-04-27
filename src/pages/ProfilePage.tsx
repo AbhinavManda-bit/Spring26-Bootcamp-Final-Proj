@@ -103,7 +103,7 @@ function ProfilePage() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Continue Shopping */}
         <button
-          onClick={() => navigate("/productCatalog")}
+          onClick={() => navigate("/products")}
           className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-6 hover:text-gray-900 transition-colors"
         >
           &larr; Continue Shopping
@@ -163,7 +163,7 @@ function ProfilePage() {
             {/* My Products (seller only)*/}
             {role === "seller" && (
               <button
-                onClick={() => navigate("/productCatalog")}
+                onClick={() => navigate("/products")}
                 className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors w-full"
               >
                 <span

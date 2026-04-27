@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 email: email,
                 role: role
             };
-            if(role == "seller") newUserDataToInsert.productsUploaded = 0;
+            if(role == "seller") newUserDataToInsert.productsAttemptedToUpload = 0;
             await setDoc(newUserDocRef, newUserDataToInsert);
         } catch (error) {
             let errorMessage: string = "Unknown error."
