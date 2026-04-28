@@ -10,9 +10,9 @@ const CATEGORIES = ['Tops', 'Bottoms', 'Accessories'] as const;
 type CategoryOption = typeof CATEGORIES[number];
 
 interface CatalogSidebarProps {
-  selectedGender: 'Men' | 'Women' | null;
+  selectedGender: 'Men' | 'Women' | 'Unisex' | null;
   selectedCategory: string | null;
-  onSelectGender: (gender: 'Men' | 'Women' | null) => void;
+  onSelectGender: (gender: 'Men' | 'Women' | 'Unisex' | null) => void;
   onSelectCategory: (category: string | null) => void;
 }
 
@@ -38,9 +38,9 @@ export default function CatalogSidebar({
 }
 
 interface SidebarCategorySectionProps {
-  selectedGender: 'Men' | 'Women' | null;
+  selectedGender: 'Men' | 'Women' | 'Unisex' | null;
   selectedCategory: string | null;
-  onSelectGender: (gender: 'Men' | 'Women' | null) => void;
+  onSelectGender: (gender: 'Men' | 'Women' | 'Unisex' | null) => void;
   onSelectCategory: (category: string | null) => void;
 }
 
@@ -74,15 +74,23 @@ function SidebarCategorySection({
         onSelectGender={onSelectGender}
         onSelectCategory={onSelectCategory}
       />
+
+      <GenderGroup
+        gender="Unisex"
+        selectedGender={selectedGender}
+        selectedCategory={selectedCategory}
+        onSelectGender={onSelectGender}
+        onSelectCategory={onSelectCategory}
+      />
     </div>
   );
 }
 
 interface GenderGroupProps {
-  gender: 'Men' | 'Women';
-  selectedGender: 'Men' | 'Women' | null;
+  gender: 'Men' | 'Women' | 'Unisex';
+  selectedGender: 'Men' | 'Women' | 'Unisex' | null;
   selectedCategory: string | null;
-  onSelectGender: (gender: 'Men' | 'Women' | null) => void;
+  onSelectGender: (gender: 'Men' | 'Women' | 'Unisex' | null) => void;
   onSelectCategory: (category: string | null) => void;
 }
 

@@ -2,7 +2,7 @@ import type { Product, Location } from '../types';
 
 export interface ProductFilters {
   location: Location | null;
-  gender: 'Men' | 'Women' | null;
+  gender: 'Men' | 'Women' | 'Unisex' | null;
   category: string | null;
   size: string | null;
   searchTerm: string;
