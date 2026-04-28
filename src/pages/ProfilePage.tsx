@@ -14,7 +14,7 @@ import OrderCard from "../Components/OrderCard";
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, currentUserData, logout } = useAuth();
+  const { currentUser, currentUserData, logout, refreshUserData } = useAuth();
 
   // Fields that can be edited by user 
   const [editName, setEditName] = useState("");
@@ -51,7 +51,7 @@ function ProfilePage() {
     }
   }, [currentUserData]);
 
-  const handleSave = async () => {
+ const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
     try {
@@ -65,35 +65,7 @@ function ProfilePage() {
         },
         { merge: true }
       );
-
-      // BUG FIX: AuthContext's currentUserData is not refreshed after the save,
-      // so navigating away and back caused the useEffect to re-run with the old
-      // context data (missing profilePicture etc.) and wipe the display states.
-      // Re-fetching the doc here keeps everything in sync.
-      const freshSnap = await getDoc(doc(db, "users", currentUser.uid));
-      if (freshSnap.exists()) {
-        const fresh = freshSnap.data();
-        const name = fresh.name ?? "";
-        const bio = fresh.bio ?? "";
-        const favStyle = fresh.favStyle ?? "";
-        const profilePicture = fresh.profilePicture ?? "";
-
-        setDisplayName(name);
-        setDisplayBio(bio);
-        setDisplayFavStyle(favStyle);
-        setDisplayProfilePicture(profilePicture);
-
-        setEditName(name);
-        setEditBio(bio);
-        setEditFavStyle(favStyle);
-        setEditProfilePicture(profilePicture);
-      } else {
-        // Fallback: update display from the edit fields directly
-        setDisplayName(editName);
-        setDisplayBio(editBio);
-        setDisplayFavStyle(editFavStyle);
-        setDisplayProfilePicture(editProfilePicture);
-      }
+      await refreshUserData();
     } catch (err) {
       console.error("Error saving profile:", err);
     } finally {
