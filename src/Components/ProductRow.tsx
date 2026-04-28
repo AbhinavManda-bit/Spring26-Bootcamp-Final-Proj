@@ -49,7 +49,7 @@ const ProductRow = ({
   const sizeValid = newSize != "";
   const [newPrice, setNewPrice] = useState(product.price);
   const priceValid =
-    /^[0-9]{1,5}(\.[0-9]{2})?/.test(newPrice.toString()) &&
+    /^[0-9]{1,5}(\.[0-9][0-9])?$/.test(newPrice.toString()) &&
     newPrice >= 0.01 &&
     newPrice <= 99999.99;
   const [newLocation, setNewLocation] = useState(product.location);
@@ -205,6 +205,7 @@ const ProductRow = ({
               onChange={(event) => setNewGender(event.target.value as Gender)}
               className="w-25 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
             >
+              <option value="">Gender:</option>
               <option value="Men">Men</option>
               <option value="Women">Women</option>
               <option value="Unisex">Unisex</option>
@@ -220,8 +221,9 @@ const ProductRow = ({
               onChange={(event) =>
                 setNewCategory(event.target.value as Category)
               }
-              className="w-26 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
+              className="w-28 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none"
             >
+              <option value="">Category:</option>
               <option value="Tops">Tops</option>
               <option value="Bottoms">Bottoms</option>
               <option value="Accessories">Accessories</option>
@@ -242,9 +244,10 @@ const ProductRow = ({
           <select
             value={newSize}
             onChange={(event) => setNewSize(event.target.value as Size)}
-            className="w-18 border border-gray-300 bg-white rounded-lg 
+            className="w-22 border border-gray-300 bg-white rounded-lg 
                   px-3 py-2 text-sm focus:outline-none"
           >
+            <option value="">Size:</option>
             <option value="XXS">XXS</option>
             <option value="XS">XS</option>
             <option value="S">S</option>
@@ -261,7 +264,7 @@ const ProductRow = ({
       {/* product price */}
       {!editing ? (
         <p>
-          {/^[0-9]+\.[0-9]{2}$/.test(product.price.toString())
+          {/^[0-9]+\.[0-9][0-9]$/.test(product.price.toString())
             ? "$" + product.price
             : "$" + product.price + ".00"}
         </p>
@@ -276,8 +279,12 @@ const ProductRow = ({
               step="0.01"
               min="0.01"
               max="99999.99"
-              value={newPrice}
-              onChange={(event) => setNewPrice(Number(event.target.value))}
+              value={newPrice === 0 ? "" : newPrice}
+              onChange={(event) =>
+                setNewPrice(
+                  event.target.value === "" ? 0 : Number(event.target.value),
+                )
+              }
               className="w-25 border border-gray-300 bg-white rounded-lg 
                         px-3 py-2 text-sm focus:outline-none"
             ></input>
@@ -308,6 +315,7 @@ const ProductRow = ({
             className="w-35 border border-gray-300 bg-white rounded-lg 
                   px-3 py-2 text-sm focus:outline-none"
           >
+            <option value="">Location:</option>
             <option value="Van Munching">Van Munching</option>
             <option value="McKeldin">McKeldin</option>
             <option value="Clarice">Clarice</option>
