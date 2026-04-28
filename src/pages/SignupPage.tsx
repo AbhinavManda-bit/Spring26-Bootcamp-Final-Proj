@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 
@@ -29,22 +29,23 @@ export default function SignupPage () {
     const [password, setPassword] = useState("");
     const [role, setRole] = useState<Role>("buyer");
 
-    /** 
-        Send the user away automatically once signed up
-        (!) Uncomment once logout feature is implemented
+    
+        // Send the user away automatically once signed up
+        // (!) Uncomment once logout feature is implemented
     useEffect(() => {
         if (loading) return;
         if (!currentUserData) return;
         console.log("Redirecting:", currentUserData.role);
         if (currentUserData.role === "buyer") {
-            navigate("/catalog");
+            navigate("/products");
         } else {
-            navigate("/dashboard");
+            navigate("/seller-dash");
         }
     }, [navigate, currentUserData, loading]);
-    **/
+    
 
-    const handleAuth = async () => {
+    const handleAuth = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         try {
             await signupAndLogin(name, email, password, role);
             console.log("User signed up")
@@ -99,7 +100,7 @@ export default function SignupPage () {
                         <div className="flex gap-x-1 mb-10">
                             <p className="font-light">Already have an account?</p>
                             <Link
-                                to="/"
+                                to="/login"
                                 className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
                             >Login</Link>
                         </div>
@@ -128,6 +129,7 @@ export default function SignupPage () {
                             <input
                                 className="mt-1 focus:outline-none border border-gray-300 rounded-lg bg-white focus:bg-gray-100 transition-colors duration-500 text-sm text-black placeholder:text-gray-300 px-3 py-2 mb-5"
                                 value={password}
+                                type="password"
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                             {/* Password instructions */}

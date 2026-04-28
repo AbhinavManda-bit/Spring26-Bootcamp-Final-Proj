@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
@@ -23,22 +23,21 @@ export default function LoginPage () {
 
     const navigate = useNavigate();
 
-    /**
-        Send the user away automatically once signed up
-        (!) Uncomment once logout feature is implemented
+        // Send the user away automatically once signed up
+        // (!) Uncomment once logout feature is implemented
     useEffect(() => {
         if (loading) return;
         if (!currentUserData) return;
         console.log("Redirecting:", currentUserData.role);
         if (currentUserData.role === "buyer") {
-            navigate("/catalog");
+            navigate("/products");
         } else {
-            navigate("/dashboard");
+            navigate("/seller-dash");
         }
     }, [navigate, currentUserData, loading]);
-    **/
 
-    const handleAuth = async () => {
+    const handleAuth = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         try {
             await login(email, password);
             console.log("User logged in");

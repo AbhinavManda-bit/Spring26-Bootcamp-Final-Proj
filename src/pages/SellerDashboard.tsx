@@ -1,3 +1,26 @@
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router";
+import type {
+  Category,
+  Gender,
+  Order,
+  Product,
+  SellerStats,
+  Size,
+  UserData,
+  Location,
+} from "../types";
+import {
+  deleteProduct,
+  getDataOfAllItemsInCatalog,
+  upsertProductData,
+} from "../Utilities/productUtilities";
+import { getAllOrderData } from "../Utilities/orderUtilities";
+import ProductRow from "../Components/ProductRow";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
+
 /*
 Page Description:
 - Seller-only page
@@ -7,11 +30,366 @@ Page Description:
 --> View sold items
 */
 
-// read current User through useAuth()
+// HELPER FUNCTIONS
+// GET SELLERS PRODUCTS
+// (read all products. return an array of products with this user's seller id)
 
-// backend functions
-// - fetch products that belong to the currently logged in seller
-// - 
+const SellerDashboard = () => {
+  const { currentUser, currentUserData, loading } = useAuth();
+  const navigate = useNavigate();
 
-// page func comp only renders if user logged in is seller. 
-// if they are a buyer, redirect to product catalog
+  // state var to hold a current product catalog list for this seller's product.
+  const [sellersProducts, setSellersProducts] = useState<Product[] | null>(
+    null,
+  );
+  // state var to hold current seller stats
+  const [sellerStats, setSellersStats] = useState<SellerStats | null>(null);
+  // state var for loadingDash status
+  const [loadingDash, setLoadingDash] = useState(true);
+
+  // ref for automatic scrolling
+  const productListRef = useRef<HTMLDivElement | null>(null);
+
+  // HELPER FUNCTIONS
+
+  // GET SELLERS PRODUCTS
+  // (read all products. return an array of products with this user's seller id)
+  const getSellersProductData = async () => {
+    if (currentUserData && currentUser) {
+      const totalProducts = await getDataOfAllItemsInCatalog();
+      const currentSellerId = currentUser.uid;
+      const thisSellersProducts = totalProducts.filter(
+        (product) => product.sellerId === currentSellerId,
+      );
+      return thisSellersProducts;
+    } else {
+      navigate("/");
+      throw new Error("No user is logged in.");
+    }
+  };
+
+  // GET SELLERS ORDER STATS
+  // - read products and orders
+  // return an object:
+  // {total revenue made by this seller, total products sold by this seller}
+  // (read the state var list of all seller products.
+  // thread an accumulator through an array of all orders.
+  // for each order, generates an array which is an intersection of this seller's products
+  // and the products in this order by productId. [basically which of these sellers products
+  // were in this order]. then for each item in this intersection
+  // array, it adds this item's price to the revenue made by this seller. and adds one
+  // to products sold by this seller)
+  const getSellerOrderStats = async (currentSellerProducts: Product[]) => {
+    setLoadingDash(true);
+    if (currentUserData && currentUser) {
+      console.log(
+        "initial fetch of current sellers products: " + currentSellerProducts,
+      );
+      const allOrdersData = await getAllOrderData();
+      // fold left workflow!!!
+      const baseAcc: SellerStats = { totalRevenue: 0, totalProductsSold: 0 };
+      const sellersCalculatedStats: SellerStats = allOrdersData.reduce(
+        (acc: SellerStats, order: Order) => {
+          console.log(
+            "[GETSELLERORDERSTATS] order id: " +
+              order.id +
+              " items: " +
+              order.items,
+          );
+          const thisSellersItemsInThisOrder = currentSellerProducts.filter(
+            (product) => {
+              return order.items.includes(product.id);
+            },
+          );
+          console.log("in the grand comparison.");
+          console.log("order.items: " + order.items);
+          console.log("current sellers products: " + currentSellerProducts);
+          console.log(
+            "this sellers items in this order: " + thisSellersItemsInThisOrder,
+          );
+          let { totalRevenue: accRevenue, totalProductsSold: accProductsSold } =
+            acc;
+          for (const orderItem of thisSellersItemsInThisOrder) {
+            accRevenue += orderItem.price;
+            accProductsSold += 1;
+          }
+          console.log(
+            "new acc rev: " +
+              accRevenue +
+              ", new acc prod sold: " +
+              accProductsSold,
+          );
+          return {
+            totalRevenue: accRevenue,
+            totalProductsSold: accProductsSold,
+          };
+        },
+        baseAcc,
+      );
+      setLoadingDash(false);
+      return sellersCalculatedStats;
+    } else {
+      navigate("/");
+      throw new Error(
+        "No user is logged in or sellers or products are not set.",
+      );
+    }
+  };
+
+  // load this seller's product data into our state seller product list
+  // then load this seller's stats data into our func comp's
+  useEffect(() => {
+    if(loading) return;
+    const getVendProdData = async () => {
+      setLoadingDash(true);
+      const products = await getSellersProductData();
+      setSellersProducts(products);
+      setSellersStats(await getSellerOrderStats(products));
+    };
+    getVendProdData();
+  }, [loading]);
+
+  // Redirects to specified path as a side effect. But returns a string we can use
+  // in our func comp while redirecting.
+  const redirectToPath = (path: string) => {
+    navigate(path);
+    return "Redirecting...";
+  };
+
+  const handleAddProductClick = async () => {
+    let updateCount: number = 0;
+    if (
+      currentUser &&
+      currentUserData &&
+      currentUserData.productsAttemptedToUpload !== undefined
+    ) {
+      const userDataDocRef = doc(db, "users", currentUser.uid);
+      try {
+        const userDataDocSnap = await getDoc(userDataDocRef);
+        if (!userDataDocSnap.exists())
+          throw new Error("Cannot find this seller's data");
+        const userData = userDataDocSnap.data() as UserData;
+        if (userData.role != "seller")
+          throw new Error("User logged in is not a seller.");
+        if (userData.productsAttemptedToUpload === undefined)
+          throw new Error("Can't find the number of products uploaded");
+        await updateDoc(userDataDocRef, {
+          productsAttemptedToUpload: userData.productsAttemptedToUpload + 1,
+        });
+        updateCount = userData.productsAttemptedToUpload + 1;
+      } catch {
+        throw new Error("Firestore error");
+      }
+      const blankProductData: Product = {
+        id:
+          updateCount.toString() +
+          "----" +
+          currentUser?.uid,
+        title: "",
+        description: "",
+        price: 0.0,
+        size: "",
+        category: "",
+        gender: "",
+        location: "",
+        imageUrl:
+          "https://res.cloudinary.com/ds5n471yb/image/upload/v1777262846/htf80xijwngsfgem9wgt.png",
+        sellerId: currentUser.uid,
+        sold: false,
+        editByDefault: true,
+      };
+      if (sellersProducts) {
+        setSellersProducts([...sellersProducts, blankProductData]);
+        console.log(
+          "updated sellers products state var by adding a blank one: " +
+            sellersProducts.length,
+        );
+        setSellersProducts([...sellersProducts, blankProductData]);
+
+        // auto scroll to the bottom of the product table
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            productListRef.current?.scrollTo({
+              top: productListRef.current.scrollHeight,
+              behavior: "smooth",
+            });
+  });
+});
+      }
+    } else {
+      throw new Error("User data error.");
+    }
+  };
+
+  const handleSubmitProductInfoClick = async (
+    id: string,
+    title: string,
+    description: string,
+    price: number,
+    size: Size,
+    category: Category,
+    gender: Gender,
+    location: Location,
+    imageUrl: string,
+    sellerId: string,
+  ) => {
+    await upsertProductData(
+      id,
+      title,
+      description,
+      price,
+      size,
+      category,
+      gender,
+      location,
+      imageUrl,
+      sellerId,
+    );
+    const productToAdd: Product = {
+      id: id,
+      title: title,
+      description: description,
+      size: size,
+      category: category,
+      gender: gender,
+      location: location,
+      imageUrl: imageUrl,
+      sellerId: sellerId,
+      price: price,
+      sold: false,
+    };
+    if(sellersProducts){
+      if(sellersProducts?.find((product) => {return product.id === id})){
+        setSellersProducts(sellersProducts.map((product) => {
+          return product.id === id ? productToAdd : product
+        }));
+      } else {
+        setSellersProducts([...sellersProducts, productToAdd]);
+      }
+    }
+  };
+
+  const handleDeleteProductClick = async (productId: string) => {
+    await deleteProduct(productId);
+    if (sellersProducts) {
+      setSellersProducts(
+        sellersProducts?.filter((product) => {
+          return product.id !== productId;
+        }),
+      );
+    }
+  };
+
+  useEffect(() => {
+    console.log(
+      "Updated sellersProducts, here's the new length",
+      sellersProducts?.length,
+    );
+  }, [sellersProducts]);
+
+  if (loading) {
+    return <p>Loading auth...</p>;
+  }
+
+  if (!currentUser || !currentUserData) {
+    navigate("/signup");
+    return <p>Redirecting...</p>;
+  }
+
+  if (currentUserData.role !== "seller") {
+    navigate("/products");
+    return <p>Redirecting...</p>;
+  }
+
+  if (loadingDash) {
+    return <p>Loading dashboard...</p>;
+  }
+
+  return (
+    // only render our func comp when a user is logged in
+    // and only if that user is a seller
+    <>
+      {(
+        currentUserData.role == "seller" ? (
+          !loadingDash && (
+            // div for page
+            <div className="min-h-screen w-full bg-terp-cream px-8 py-8">
+              {/* div for content */}
+              <div className="w-full max-w-7xl">
+                {/* seller greeting */}
+                <h1 className="text-5xl font-bold mb-8">
+                  Welcome, {currentUserData.name}!
+                </h1>
+                {/* div for top row with stats and add product button */}
+                <div className="flex gap-6 items-end">
+                  {/* first statistic card (number of total listing) */}
+                  <div className="bg-white rounded-2xl p-6">
+                    {/* statistic label */}
+                    <p className="text-lg font-bold">TOTAL LISTINGS</p>
+                    <p>{sellersProducts?.length}</p>
+                  </div>
+                  {/* second statistic card (total revenue) */}
+                  <div className="bg-white rounded-2xl p-6">
+                    {/* statistic label */}
+                    <p className="text-lg font-bold">REVENUE</p>
+                    <p>${sellerStats?.totalRevenue}</p>
+                  </div>
+                  {/* third statistic card (total products sold) */}
+                  <div className="bg-white rounded-2xl p-6">
+                    {/* statistic label */}
+                    <p className="text-lg font-bold">PRODUCTS SOLD</p>
+                    <p>{sellerStats?.totalProductsSold}</p>
+                  </div>
+                  {/* button to scroll to the add product view */}
+                  <button
+                    className="bg-black text-white rounded-xl px-8 py-6"
+                    style={{ cursor: "pointer" }}
+                    onClick={handleAddProductClick}
+                  >
+                    <b>+</b> Add Product
+                  </button>
+                </div>
+                {/* div for table of this seller's products */}
+                <div className="bg-white rounded-2xl p-8 mt-8 w-full">
+                  {/* row of column headings for product table */}
+                  <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1.5fr_1fr] border-b pb-4 font-bold pr-2">
+                    <p>PRODUCT</p>
+                    <p>CATEGORY</p>
+                    <p>SIZE</p>
+                    <p>PRICE</p>
+                    <p>IN-STOCK?</p>
+                    <p>PICKUP LOCATION</p>
+                    <p>ACTION</p>
+                  </div>
+                  {/* div to wrap the list of products */}
+                  <div 
+                  ref={productListRef}
+                  className="flex flex-col overflow-y-auto max-h-[45vh] w-full pr-2">
+                    {sellersProducts &&
+                      sellersProducts?.map((prod) => {
+                        return (
+                          <ProductRow
+                            key={prod.id}
+                            product={prod}
+                            onDeleteProduct={handleDeleteProductClick}
+                            onSubmitProduct={handleSubmitProductInfoClick}
+                            editDefault={
+                              prod.editByDefault ? prod.editByDefault : false
+                            }
+                          />
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        ) : (
+          <p>{redirectToPath("/products")}</p>
+        )
+      )}
+    </>
+  );
+};
+
+export default SellerDashboard;

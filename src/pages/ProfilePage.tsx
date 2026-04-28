@@ -7,14 +7,14 @@ Page Description:
 */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebase"; 
 import { useAuth } from "../context/AuthContext"; 
 import OrderCard from "../Components/OrderCard"; 
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, currentUserData, logout } = useAuth();
+  const { currentUser, currentUserData, logout, refreshUserData } = useAuth();
 
   // Fields that can be edited by user 
   const [editName, setEditName] = useState("");
@@ -51,7 +51,7 @@ function ProfilePage() {
     }
   }, [currentUserData]);
 
-  const handleSave = async () => {
+ const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
     try {
@@ -65,11 +65,7 @@ function ProfilePage() {
         },
         { merge: true }
       );
-      // Update the display card 
-      setDisplayName(editName);
-      setDisplayBio(editBio);
-      setDisplayFavStyle(editFavStyle);
-      setDisplayProfilePicture(editProfilePicture);
+      await refreshUserData();
     } catch (err) {
       console.error("Error saving profile:", err);
     } finally {
@@ -103,7 +99,7 @@ function ProfilePage() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Continue Shopping */}
         <button
-          onClick={() => navigate("/productCatalog")}
+          onClick={() => navigate("/products")}
           className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-6 hover:text-gray-900 transition-colors"
         >
           &larr; Continue Shopping
@@ -163,7 +159,7 @@ function ProfilePage() {
             {/* My Products (seller only)*/}
             {role === "seller" && (
               <button
-                onClick={() => navigate("/productCatalog")}
+                onClick={() => navigate("/seller-dash")}
                 className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors w-full"
               >
                 <span

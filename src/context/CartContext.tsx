@@ -56,7 +56,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     // utility function to add item to cart
     // throws error if items is not in product catalog or if user is not logged in or if 
-    // current user is a vendor
+    // current user is a seller
     // and displays error to the user
     const addItem = async (productId: string) => {
         setLoadingCart(true);
@@ -178,7 +178,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
     <CartContext.Provider value={value}>
-      {!loadingCart && children}
+      {children}
     </CartContext.Provider>
   );
 }

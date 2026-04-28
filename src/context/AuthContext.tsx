@@ -133,6 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 email: email,
                 role: role
             };
+            if(role == "seller") newUserDataToInsert.productsAttemptedToUpload = 0;
             await setDoc(newUserDocRef, newUserDataToInsert);
         } catch (error) {
             let errorMessage: string = "Unknown error."
@@ -192,11 +193,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
-    const value = { currentUser, currentUserData, loading, signupAndLogin, login, logout, sendResetPWEmail };
+    const refreshUserData = async () => {
+        setLoading(true);
+        if(!currentUser){
+            setLoading(false);
+            return;
+        }
+        const usersData = await pullUserData(currentUser);
+        setCurrentUserData(usersData);
+        setLoading(false);
+    }
+
+    const value = { currentUser, currentUserData, loading, signupAndLogin, login, logout, sendResetPWEmail, refreshUserData };
 
     return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

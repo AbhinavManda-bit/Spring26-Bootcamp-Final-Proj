@@ -86,7 +86,7 @@ export default function ForgotPasswordPage () {
                         <div className="flex gap-x-1">
                             <p className="font-light">Remember your password?</p>
                             <Link
-                                to="/"
+                                to="/login"
                                 className="underline cursor-pointer text-terp-red hover:text-terp-darkred"
                             >Login</Link>
                         </div>
