@@ -21,7 +21,7 @@ function HomePage() {
       if(currentUserData.role == "buyer"){
         navigate("products");
       } else {
-        navigate("seller-dash");
+        navigate("seller-dash"); 
       }
     } else {
       navigate("/signup");
