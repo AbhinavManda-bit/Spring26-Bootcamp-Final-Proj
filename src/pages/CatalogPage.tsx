@@ -16,22 +16,26 @@ import type { Product, Location } from '../types';
 import { filterProducts, type ProductFilters } from '../utils/filterProducts';
 import LocationFilterBar from '../Components/LocationFilterBar';
 import CatalogSidebar from '../Components/FilterSidebar';
-
-const MOCK_PRODUCTS: Product[] = [];
+import { useAuth } from '../context/AuthContext';
+import { getDataOfAllItemsInCatalog } from '../Utilities/productUtilities';
 
 export default function CatalogPage() {
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') ?? '';
   const navigate = useNavigate();
+  const { currentUser, currentUserData } = useAuth();
 
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [selectedGender, setSelectedGender] = useState<'Men' | 'Women' | null>(null);
+  const [selectedGender, setSelectedGender] = useState<'Men' | 'Women' | 'Unisex' | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     // TODO: fetch products from Firestore
-    setProducts(MOCK_PRODUCTS);
+    const setProductsOnLoad = async () => {
+      setProducts(await getDataOfAllItemsInCatalog());
+    };
+    setProductsOnLoad();
   }, []);
 
   const filters: ProductFilters = {

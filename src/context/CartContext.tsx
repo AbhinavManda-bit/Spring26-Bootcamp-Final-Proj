@@ -178,7 +178,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
     <CartContext.Provider value={value}>
-      {!loadingCart && children}
+      {children}
     </CartContext.Provider>
   );
 }

@@ -35,7 +35,7 @@ Page Description:
 // (read all products. return an array of products with this user's seller id)
 
 const SellerDashboard = () => {
-  const { currentUser, currentUserData } = useAuth();
+  const { currentUser, currentUserData, loading } = useAuth();
   const navigate = useNavigate();
 
   // state var to hold a current product catalog list for this seller's product.
@@ -44,8 +44,8 @@ const SellerDashboard = () => {
   );
   // state var to hold current seller stats
   const [sellerStats, setSellersStats] = useState<SellerStats | null>(null);
-  // state var for loading status
-  const [loading, setLoading] = useState(true);
+  // state var for loadingDash status
+  const [loadingDash, setLoadingDash] = useState(true);
 
   // ref for automatic scrolling
   const productListRef = useRef<HTMLDivElement | null>(null);
@@ -80,7 +80,7 @@ const SellerDashboard = () => {
   // array, it adds this item's price to the revenue made by this seller. and adds one
   // to products sold by this seller)
   const getSellerOrderStats = async (currentSellerProducts: Product[]) => {
-    setLoading(true);
+    setLoadingDash(true);
     if (currentUserData && currentUser) {
       console.log(
         "initial fetch of current sellers products: " + currentSellerProducts,
@@ -126,7 +126,7 @@ const SellerDashboard = () => {
         },
         baseAcc,
       );
-      setLoading(false);
+      setLoadingDash(false);
       return sellersCalculatedStats;
     } else {
       navigate("/");
@@ -139,14 +139,15 @@ const SellerDashboard = () => {
   // load this seller's product data into our state seller product list
   // then load this seller's stats data into our func comp's
   useEffect(() => {
+    if(loading) return;
     const getVendProdData = async () => {
-      setLoading(true);
+      setLoadingDash(true);
       const products = await getSellersProductData();
       setSellersProducts(products);
       setSellersStats(await getSellerOrderStats(products));
     };
     getVendProdData();
-  }, []);
+  }, [loading]);
 
   // Redirects to specified path as a side effect. But returns a string we can use
   // in our func comp while redirecting.
@@ -156,6 +157,7 @@ const SellerDashboard = () => {
   };
 
   const handleAddProductClick = async () => {
+    let updateCount: number = 0;
     if (
       currentUser &&
       currentUserData &&
@@ -174,12 +176,13 @@ const SellerDashboard = () => {
         await updateDoc(userDataDocRef, {
           productsAttemptedToUpload: userData.productsAttemptedToUpload + 1,
         });
+        updateCount = userData.productsAttemptedToUpload + 1;
       } catch {
         throw new Error("Firestore error");
       }
       const blankProductData: Product = {
         id:
-          (currentUserData.productsAttemptedToUpload + 1).toString() +
+          updateCount.toString() +
           "----" +
           currentUser?.uid,
         title: "",
@@ -284,13 +287,31 @@ const SellerDashboard = () => {
     );
   }, [sellersProducts]);
 
+  if (loading) {
+    return <p>Loading auth...</p>;
+  }
+
+  if (!currentUser || !currentUserData) {
+    navigate("/signup");
+    return <p>Redirecting...</p>;
+  }
+
+  if (currentUserData.role !== "seller") {
+    navigate("/products");
+    return <p>Redirecting...</p>;
+  }
+
+  if (loadingDash) {
+    return <p>Loading dashboard...</p>;
+  }
+
   return (
     // only render our func comp when a user is logged in
     // and only if that user is a seller
     <>
-      {currentUserData ? (
+      {(
         currentUserData.role == "seller" ? (
-          !loading && (
+          !loadingDash && (
             // div for page
             <div className="min-h-screen w-full bg-terp-cream px-8 py-8">
               {/* div for content */}
@@ -366,8 +387,6 @@ const SellerDashboard = () => {
         ) : (
           <p>{redirectToPath("/products")}</p>
         )
-      ) : (
-        <p>{redirectToPath("/products")}</p>
       )}
     </>
   );
