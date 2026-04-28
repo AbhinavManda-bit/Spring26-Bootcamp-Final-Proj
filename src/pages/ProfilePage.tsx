@@ -7,7 +7,7 @@ Page Description:
 */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebase"; 
 import { useAuth } from "../context/AuthContext"; 
 import OrderCard from "../Components/OrderCard"; 
@@ -65,11 +65,35 @@ function ProfilePage() {
         },
         { merge: true }
       );
-      // Update the display card 
-      setDisplayName(editName);
-      setDisplayBio(editBio);
-      setDisplayFavStyle(editFavStyle);
-      setDisplayProfilePicture(editProfilePicture);
+
+      // BUG FIX: AuthContext's currentUserData is not refreshed after the save,
+      // so navigating away and back caused the useEffect to re-run with the old
+      // context data (missing profilePicture etc.) and wipe the display states.
+      // Re-fetching the doc here keeps everything in sync.
+      const freshSnap = await getDoc(doc(db, "users", currentUser.uid));
+      if (freshSnap.exists()) {
+        const fresh = freshSnap.data();
+        const name = fresh.name ?? "";
+        const bio = fresh.bio ?? "";
+        const favStyle = fresh.favStyle ?? "";
+        const profilePicture = fresh.profilePicture ?? "";
+
+        setDisplayName(name);
+        setDisplayBio(bio);
+        setDisplayFavStyle(favStyle);
+        setDisplayProfilePicture(profilePicture);
+
+        setEditName(name);
+        setEditBio(bio);
+        setEditFavStyle(favStyle);
+        setEditProfilePicture(profilePicture);
+      } else {
+        // Fallback: update display from the edit fields directly
+        setDisplayName(editName);
+        setDisplayBio(editBio);
+        setDisplayFavStyle(editFavStyle);
+        setDisplayProfilePicture(editProfilePicture);
+      }
     } catch (err) {
       console.error("Error saving profile:", err);
     } finally {
