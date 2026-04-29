@@ -32,3 +32,27 @@ export default function CartPage() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
+ useEffect(() => {
+    const fetchCartProducts = async () => {
+      setLoading(true);
+      if (!items || items.length === 0) {
+        setCartProducts([]);
+        setSubtotal(0);
+        setLoading(false);
+        return;
+      }
+      try {
+        const allProducts = await getDataOfAllItemsInCatalog();
+        const cartItems = allProducts.filter((p) => items.includes(p.id));
+        setCartProducts(cartItems);
+        const total = cartItems.reduce((sum, p) => sum + p.price, 0);
+        setSubtotal(total);
+      } catch (err) {
+        console.error("Error fetching cart products:", err);
+      }
+      setLoading(false);
+    };
+    fetchCartProducts();
+  }, [items]);
+
+ 
