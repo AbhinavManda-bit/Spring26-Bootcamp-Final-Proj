@@ -10,31 +10,35 @@ Page Description:
 --> Clicking a product → ProductPage
 */
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import type { Product, Location } from '../types';
-import { filterProducts, type ProductFilters } from '../utils/filterProducts';
-import LocationFilterBar from '../Components/LocationFilterBar';
-import CatalogSidebar from '../Components/FilterSidebar';
-import { useAuth } from '../context/AuthContext';
-import { getDataOfAllItemsInCatalog } from '../Utilities/productUtilities';
-import ProductCard from '../Components/ProductCard';
+import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import type { Product, Location } from "../types";
+import { filterProducts, type ProductFilters } from "../utils/filterProducts";
+import LocationFilterBar from "../Components/LocationFilterBar";
+import CatalogSidebar from "../Components/FilterSidebar";
+import { useAuth } from "../context/AuthContext";
+import { getDataOfAllItemsInCatalog } from "../Utilities/productUtilities";
+import ProductCard from "../Components/ProductCard";
 
 export default function CatalogPage() {
   const [searchParams] = useSearchParams();
-  const searchTerm = searchParams.get('search') ?? '';
+  const searchTerm = searchParams.get("search") ?? "";
   const navigate = useNavigate();
   const { currentUser, currentUserData } = useAuth();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [selectedGender, setSelectedGender] = useState<'Men' | 'Women' | 'Unisex' | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null,
+  );
+  const [selectedGender, setSelectedGender] = useState<
+    "Men" | "Women" | "Unisex" | null
+  >(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: fetch products from Firestore
+    // TODO: fetch products from Firestore that are in stock
     const setProductsOnLoad = async () => {
-      setProducts(await getDataOfAllItemsInCatalog());
+      setProducts((await getDataOfAllItemsInCatalog()).filter((product) => {return product.sold === false}));
     };
     setProductsOnLoad();
   }, []);
@@ -56,7 +60,7 @@ export default function CatalogPage() {
         onSelectLocation={setSelectedLocation}
       />
 
-      <div className="flex" style={{ minHeight: 'calc(100vh - 112px)' }}>
+      <div className="flex" style={{ minHeight: "calc(100vh - 112px)" }}>
         <CatalogSidebar
           selectedGender={selectedGender}
           selectedCategory={selectedCategory}
@@ -73,12 +77,17 @@ export default function CatalogPage() {
 
           {filteredProducts.length === 0 ? (
             <p className="text-gray-500">
-              {searchTerm ? `No items found for "${searchTerm}".` : 'No products yet.'}
+              {searchTerm
+                ? `No items found for "${searchTerm}".`
+                : "No products yet."}
             </p>
           ) : (
-            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
+            >
               {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
