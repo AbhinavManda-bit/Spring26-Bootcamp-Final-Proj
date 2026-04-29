@@ -154,3 +154,113 @@ export default function CartPage() {
     );
   }
 
+
+  return (
+    <div className="min-h-screen bg-[#FAF6F1] px-10 py-6 pb-16">
+      <button
+        onClick={() => navigate("/products")}
+        className="bg-transparent border-none text-black font-bold text-sm cursor-pointer mb-6"
+      >
+        ← Continue Shopping
+      </button>
+
+      <div className="flex gap-8 items-start flex-wrap">
+       
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-extrabold text-black mb-5">Your Cart</h1>
+          <div className="flex flex-col gap-4">
+            {cartProducts.map((product) => (
+              <CartItem
+                key={product.id}
+                product={product}
+                removeItem={handleRemoveItem}
+              />
+            ))}
+          </div>
+        </div>
+
+       
+        <div className="flex flex-col gap-4 w-[360px]">
+    
+          <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-black">Subtotal:</span>
+              <span className="text-sm font-semibold text-black">${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-black">Pick-Up - UMD:</span>
+              <span className="text-sm font-bold text-green-700">Free</span>
+            </div>
+            <div className="flex justify-between items-center border-t border-gray-200 pt-3 mt-1">
+              <span className="text-sm font-bold text-black">Order Summary:</span>
+              <span className="text-sm font-bold text-black">${subtotal.toFixed(2)}</span>
+            </div>
+          </div>
+
+ 
+          <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col gap-3">
+            <h2 className="text-lg font-extrabold text-black mb-1">Shopping Card</h2>
+
+            <p className="text-xs font-semibold text-black">Payment Method:</p>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-4 h-4 rounded-full border-2 border-green-700 shadow-[inset_0_0_0_3px_#15803d]" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+              </svg>
+              <span className="text-sm text-gray-700 font-medium">Credit Card</span>
+            </div>
+
+            <label className="text-xs font-semibold text-black">Name On Card</label>
+            <input
+              type="text"
+              placeholder="Enter name on card"
+              value={nameOnCard}
+              onChange={(e) => setNameOnCard(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-black outline-none bg-white"
+            />
+
+            <label className="text-xs font-semibold text-black">Card Number</label>
+            <input
+              type="text"
+              placeholder="Enter card number"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-black outline-none bg-white"
+            />
+
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="text-xs font-semibold text-black block mb-1">Expiration Date</label>
+                <input
+                  type="text"
+                  placeholder="Enter expiration date"
+                  value={expDate}
+                  onChange={(e) => setExpDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-black outline-none bg-white"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-semibold text-black block mb-1">CVV</label>
+                <input
+                  type="text"
+                  placeholder="Enter CVV"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-black outline-none bg-white"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              disabled={checkingOut}
+              className={`w-full py-4 rounded-lg text-white font-bold text-base mt-2 cursor-pointer ${checkingOut ? "bg-gray-400 cursor-not-allowed" : "bg-black"}`}
+            >
+              {checkingOut ? "Processing..." : "Check Out"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
