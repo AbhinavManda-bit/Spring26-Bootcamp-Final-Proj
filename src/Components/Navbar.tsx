@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const HIDDEN_ROUTES = new Set(['/login', '/signup']);
+const HIDDEN_ROUTES = new Set(['/login', '/signup', '/recover']);
 
 export default function Navbar() {
   const location = useLocation();
