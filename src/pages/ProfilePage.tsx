@@ -8,15 +8,15 @@ Page Description:
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../services/firebase"; 
-import { useAuth } from "../context/AuthContext"; 
-import OrderCard from "../Components/OrderCard"; 
+import { db } from "../services/firebase";
+import { useAuth } from "../context/AuthContext";
+import OrderCard from "../Components/OrderCard";
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { currentUser, currentUserData, logout } = useAuth();
 
-  // Fields that can be edited by user 
+  // Fields that can be edited by user
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editFavStyle, setEditFavStyle] = useState("");
@@ -63,7 +63,7 @@ function ProfilePage() {
           favStyle: editFavStyle,
           profilePicture: editProfilePicture,
         },
-        { merge: true }
+        { merge: true },
       );
 
       // BUG FIX: AuthContext's currentUserData is not refreshed after the save,
@@ -127,16 +127,18 @@ function ProfilePage() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Continue Shopping */}
         <button
-          onClick={() => navigate("/products")}
+          onClick={() =>
+            navigate(role === "seller" ? "/seller-dash" : "/products")
+          }
           className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-6 hover:text-gray-900 transition-colors"
         >
-          &larr; Continue Shopping
+          &larr;{" "}
+          {role === "seller" ? "Continue to Products" : "Continue Shopping"}
         </button>
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left Side */}
           <div className="flex flex-col gap-4 w-full md:w-64 flex-shrink-0">
-
             {/* Profile Card */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col items-center text-center">
               {displayProfilePicture !== "" && (
@@ -153,7 +155,10 @@ function ProfilePage() {
               >
                 {displayName !== "" ? displayName.toUpperCase() : "YOUR NAME"}
               </h2>
-              <p className="text-sm font-medium mb-2" style={{ color: "#e05c5c" }}>
+              <p
+                className="text-sm font-medium mb-2"
+                style={{ color: "#e05c5c" }}
+              >
                 {email}
               </p>
               {displayBio !== "" && (
@@ -171,7 +176,7 @@ function ProfilePage() {
             {/* My Orders (buyer only) */}
             {role === "buyer" && (
               <button
-                onClick={() => setShowOrders(true)}
+                onClick={() => navigate("/cart")}
                 className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors w-full"
               >
                 <span
