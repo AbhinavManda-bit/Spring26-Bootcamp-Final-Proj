@@ -4,11 +4,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import {
+  flipSoldToTrueOrFalseProduct,
   getItemPrice,
   verifyItemIdInCatalog,
 } from "../Utilities/productUtilities";
 import { pullUserData } from "../Utilities/userUtilities";
 import { pullUserCart } from "../Utilities/cartUtilities";
+import { hasBeenOrderedYet } from "../Utilities/orderUtilities";
 
 /*
 Context Description:
@@ -82,6 +84,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       await updateDoc(userDataCartDocRef, {
         items: arrayUnion(productId),
       });
+      await flipSoldToTrueOrFalseProduct(productId, true);
       setLoadingCart(false);
     } else {
       setLoadingCart(false);
@@ -117,6 +120,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } catch {
         throw new Error("error with db + ");
+      }
+      if(!(await hasBeenOrderedYet(productId))){
+        flipSoldToTrueOrFalseProduct(productId, false);
       }
       setLoadingCart(false);
     } else {

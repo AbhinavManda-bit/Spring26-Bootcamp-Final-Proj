@@ -22,3 +22,12 @@ export const getAllOrderData = async () => {
     }
     return docsData;
 }
+
+// utility function to check if a product has been ordered yet
+export const hasBeenOrderedYet = async (productId: string) => {
+    const allOrderData = await getAllOrderData();
+    const containsItem = allOrderData.find((order) => {
+        return order.items.find((item) => {return item === productId});
+    })
+    return containsItem;
+}
