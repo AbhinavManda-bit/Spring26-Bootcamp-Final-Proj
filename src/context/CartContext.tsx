@@ -109,7 +109,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const userId = currentUser.uid;
       const userDataCartDocRef = doc(db, "carts", userId);
-      if (!items) throw new Error("Cannot remove an item from a null cart.");
+      if (items === null) throw new Error("Cannot remove an item from a null cart.");
       setItems(items.filter((item) => item !== productId));
       try {
         await updateDoc(userDataCartDocRef, {
@@ -138,7 +138,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const userId = currentUser.uid;
       const userDataCartDocRef = doc(db, "carts", userId);
-      if (!items) throw new Error("Cannot clear a null cart.");
+      if (items === null) throw new Error("Cannot clear a null cart.");
       setItems([]);
       await updateDoc(userDataCartDocRef, {
         items: [],
