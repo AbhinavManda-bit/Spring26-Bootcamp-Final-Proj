@@ -7,6 +7,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../services/firebase";
@@ -118,3 +119,14 @@ export const upsertProductData = async (
     throw new Error("Firestore db write new product error.");
   }
 };
+
+// utility function to turn a product's sold to true
+export const flipSoldToTrueOrFalseProduct = async (productId: string, target: boolean) => {
+  const productDocRef = doc(db, "products", productId);
+  try {
+    await updateDoc(productDocRef, {sold: target});
+    console.log("flipped sold to true for product with product id: " + productId);
+  } catch {
+    throw new Error("Firestore db write flip sold to true product error");
+  }
+}

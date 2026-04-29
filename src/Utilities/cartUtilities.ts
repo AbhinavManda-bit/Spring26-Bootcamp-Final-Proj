@@ -1,6 +1,6 @@
 import type { User } from "firebase/auth";
 import { pullUserData } from "./userUtilities";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import type { CartData } from "../types";
 
@@ -20,12 +20,9 @@ export const pullUserCart = async (user: User | null) => {
         const userId = user.uid;
         const userDataCartDocRef = doc(db, "carts", userId);
         let userDataCartSnap = await getDoc(userDataCartDocRef);
-        if(!(userDataCartSnap.exists())){
-            while(true) {
-                await new Promise(r => setTimeout(r, 1000)); 
-                userDataCartSnap = await getDoc(userDataCartDocRef);
-                if(userDataCartSnap.exists()) break;
-            }
+        if (!userDataCartSnap.exists()) {
+            await setDoc(userDataCartDocRef, { items: [] });
+            return { items: [] } as CartData;
         }
         const userCart = userDataCartSnap.data() as CartData;
         return userCart;
@@ -33,3 +30,5 @@ export const pullUserCart = async (user: User | null) => {
         return null;
     }
 }
+
+// 
