@@ -48,11 +48,33 @@ export default function CartPage() {
         const total = cartItems.reduce((sum, p) => sum + p.price, 0);
         setSubtotal(total);
       } catch (err) {
-        console.error("Error fetching cart products:", err);
+        console.error("Error fetching cart products  ", err);
       }
       setLoading(false);
     };
     fetchCartProducts();
   }, [items]);
 
- 
+  const handleRemoveItem = async (productId: string) => {
+    try {
+      await removeItem(productId);
+    } catch (err) {
+      console.error("Error removing item  ", err);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!nameOnCard || !cardNumber || !expDate || !cvv) {
+      alert("Please fill in all payment fields.");
+      return;
+    }
+    setCheckingOut(true);
+    try {
+      await clearCart();
+      setCheckoutSuccess(true);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Something went wrong during checkout :( Please try again.");
+    }
+    setCheckingOut(false);
+  };
