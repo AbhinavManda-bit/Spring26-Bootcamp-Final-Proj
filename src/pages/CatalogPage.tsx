@@ -18,6 +18,7 @@ import LocationFilterBar from '../Components/LocationFilterBar';
 import CatalogSidebar from '../Components/FilterSidebar';
 import { useAuth } from '../context/AuthContext';
 import { getDataOfAllItemsInCatalog } from '../Utilities/productUtilities';
+import ProductCard from '../Components/ProductCard';
 
 export default function CatalogPage() {
   const [searchParams] = useSearchParams();
@@ -77,10 +78,7 @@ export default function CatalogPage() {
           ) : (
             <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
               {filteredProducts.map((product) => (
-                <div key={product.id} className="border border-gray-200 rounded-lg p-4 cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-                  <h2 className="font-semibold text-gray-900">{product.title}</h2>
-                  <p className="text-gray-600">${product.price}</p>
-                </div>
+              <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
