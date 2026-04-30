@@ -14,7 +14,9 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import CartItem from "../Components/CartItem";
 import { getDataOfAllItemsInCatalog } from "../Utilities/productUtilities";
-import type { Product } from "../types/index";
+import type { Order, Product } from "../types/index";
+import { db } from "../services/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -63,6 +65,18 @@ export default function CartPage() {
     }
   };
 
+  const submitCurrOrder = async () => {
+    const collectionRef = collection(db, "orders");
+    try {
+      await addDoc(collectionRef, {
+        buyerId: currentUser?.uid,
+        items: items
+      } as Order);
+    } catch {
+      throw new Error("submitting order to firestore failed");
+    }
+  }
+
   const handleCheckout = async () => {
     if (!nameOnCard || !cardNumber || !expDate || !cvv) {
       alert("Please fill in all payment fields.");
@@ -70,6 +84,7 @@ export default function CartPage() {
     }
     setCheckingOut(true);
     try {
+      await submitCurrOrder();
       await clearCart();
       setCheckoutSuccess(true);
     } catch (err) {
